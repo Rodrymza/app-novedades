@@ -8,7 +8,7 @@ const novedadSchema = new Schema(
     },
     autor: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Usuario",
       required: true,
     },
 
