@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",                // Compila a una versión moderna de JS
+    "module": "NodeNext",             // Usa el sistema de módulos de Node
+    "moduleResolution": "NodeNext",   // Cómo Node encuentra los módulos
+    "esModuleInterop": true,          // Permite la importación de módulos CommonJS
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,                   // Habilita todas las comprobaciones estrictas
+    "skipLibCheck": true,             // Omite la comprobación de tipos de los .d.ts
+    "outDir": "./dist",               // Donde se guardará el JS compilado (para producción)
+    "rootDir": "./src"                // Donde está tu código fuente TS
+  },
+  "include": ["src/**/*"] 
+}
