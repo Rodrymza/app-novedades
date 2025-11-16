@@ -26,6 +26,11 @@ const userShema = new Schema(
       lowercase: true,
       trim: true,
     },
+    password: {
+      type: String,
+      required: true,
+      
+    },
     rol: {
       type: String,
       enum: ["OPERADOR", "SUPERVISOR"],
