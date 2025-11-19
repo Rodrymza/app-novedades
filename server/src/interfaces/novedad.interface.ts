@@ -22,6 +22,7 @@ export interface NovedadResponse {
     nombre: string;
   };
   etiquetas?: string[];
+  fecha: string
 }
 
 export interface FiltroNovedad {

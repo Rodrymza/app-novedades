@@ -16,6 +16,7 @@ export class NovedadMapper {
         nombre: doc?.area.nombre || "Area Eliminada",
       },
       etiquetas: doc.etiquetas,
+      fecha: doc.createdAt.toISOString() || new Date().toISOString(),
     };
   }
 }
