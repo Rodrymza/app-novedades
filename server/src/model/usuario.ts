@@ -1,6 +1,18 @@
-import { model, Schema } from "mongoose";
+import { Document, HydratedDocument, model, Schema } from "mongoose";
 
-const userShema = new Schema(
+export type Rol = "OPERADOR" | "SUPERVISOR";
+
+export interface IUsuario {
+  apellido: string;
+  nombre : string;
+  username : string;
+  email: string;
+  password: string;
+  rol: Rol;
+
+}
+
+const userShema = new Schema<IUsuario>(
   {
     apellido: {
       type: String,
@@ -42,4 +54,7 @@ const userShema = new Schema(
   }
 );
 
+
 export default model('Usuario', userShema);
+export type IUsuarioDocument = HydratedDocument<IUsuario>;
+

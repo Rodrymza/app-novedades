@@ -1,11 +1,16 @@
-import { Schema, model } from "mongoose";
+import { HydratedDocument, Schema, model } from "mongoose";
 
+export interface IArea {
+  nombre: string;
+  descripcion: string;
+}
 const areaSchema = new Schema({
   nombre: {
     type: String,
     required: true,
     unique: true,
     trim: true,
+    length: 50
   },
   descripcion: {
     type: String,
@@ -15,3 +20,4 @@ const areaSchema = new Schema({
   },
 });
 export default model("Area", areaSchema);
+export type IAreaDocument = HydratedDocument<IArea>;
