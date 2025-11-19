@@ -1,25 +1,34 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import connectDB from './config/db';
-import usuarioRoutes from './routes/usuarioRoutes';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import connectDB from "./config/db";
+import authRoutes from "./routes/authRoutes";
+import cookieParser from "cookie-parser";
+import { errorHandler } from "./middlewares/error.middleware";
+import novedadRoutes from "./routes/novedadRoutes";
+import areaRoutes from "./routes/areaRoutes";
+import { validarToken } from "./utils/tokenService";
 dotenv.config();
 
 connectDB();
 
 const app = express();
 
-app.use(cors()); // Permite peticiones desde el frontend (React)
-app.use(express.json()); 
-
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
 
 const PORT = process.env.PORT || 4000;
 
-app.get('/', (req, res) => {
-  res.send('API del Libro de Novedades corriendo...');
+app.get("/", (req, res) => {
+  res.send("API del Libro de Novedades corriendo...");
 });
 
-app.use("/api/users", usuarioRoutes)
+app.use("/api/auth", authRoutes);
+app.use("/api/novedades", validarToken, novedadRoutes);
+app.use("/api/areas", validarToken, areaRoutes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
