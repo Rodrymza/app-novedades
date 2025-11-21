@@ -113,3 +113,30 @@ export const loginUsuario: RequestHandler<
     next(error);
   }
 };
+
+export const getProfile: RequestHandler<{}, UserResponseData, {}, {}> = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const userPayload = req.user;
+    if (!userPayload) {
+      return res.status(401).json({
+        message: "Error de autenticacion",
+        detail: "Usuario no logueado",
+      });
+    }
+
+    const user_id = userPayload.id;
+    const usuarioObtenido = await Usuario.findById(user_id);
+    if (!usuarioObtenido) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+    const responseData: UserResponse = UsuarioMapper.toDto(usuarioObtenido);
+
+    return res.status(200).json(responseData);
+  } catch (error) {
+    next(error);
+  }
+};
