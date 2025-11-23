@@ -22,13 +22,16 @@ export interface NovedadResponse {
     nombre: string;
   };
   etiquetas?: string[];
-  fecha: string
+  fecha: string;
 }
 
 export interface FiltroNovedad {
   usuario_id: string;
   area_id: string;
   tags: string[];
+  fechaInicio: string;
+  fechaFin: string;
+  textoBusqueda: string;
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;
