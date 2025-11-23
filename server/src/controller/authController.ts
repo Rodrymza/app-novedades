@@ -140,3 +140,24 @@ export const getProfile: RequestHandler<{}, UserResponseData, {}, {}> = async (
     next(error);
   }
 };
+
+export const logoutUsuario: RequestHandler<
+  {},
+  UserResponseData,
+  {},
+  {}
+> = async (req, res, next) => {
+  try {
+    const userPayload = req.user;
+    if (!userPayload) {
+      res.status(401).json({
+        message: "Error de autenticacion",
+        detail: "Usuario no logueado",
+      });
+    }
+    res.clearCookie("jwt");
+    return res.status(200).json({ message: "Logout exitoso" });
+  } catch (error) {
+    next(error);
+  }
+};
