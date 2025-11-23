@@ -1,35 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+
+import { ProtectedRoute } from "./components/protectedRoute"; // <-- Importamos el guardia
+import LoginPage from "./pages/LoginPage";
+import RegisterUserPage from "./pages/RegisterUserPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import { MainLayout } from "./components/layout/MainLayout";
+import DashboardPage from "./pages/DashboardPage";
+import { ProtectedAdminUser } from "./components/protectedAdminUser";
+import CreateNovedadPage from "./pages/CreateNovedadPage";
+import AdminAreasPage from "./pages/AdminAreasPage";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    // 1. AuthProvider envuelve TODO para que el 'useContext' funcione
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Rutas Públicas (Cualquiera puede entrar) */}
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Rutas para login*/}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              {/* Aquí adentro pones todo lo que requiera login */}
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/perfil" element={<h1>Mi Perfil</h1>} />
+              <Route path="/crear-novedad" element={<CreateNovedadPage />} />
+            </Route>
+          </Route>
+
+          {/* Rutas para admin*/}
+          <Route element={<ProtectedAdminUser />}>
+            <Route element={<MainLayout />}>
+              <Route
+                path="/admin/registrar-usuario"
+                element={<RegisterUserPage />}
+              />
+              <Route
+                path="/admin/gestion-usuarios"
+                element={<AdminUsersPage />}
+              />
+              <Route path="/admin/gestion-areas" element={<AdminAreasPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;
