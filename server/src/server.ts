@@ -8,13 +8,19 @@ import { errorHandler } from "./middlewares/error.middleware";
 import novedadRoutes from "./routes/novedadRoutes";
 import areaRoutes from "./routes/areaRoutes";
 import { validarToken } from "./utils/tokenService";
+import userRoutes from "./routes/userRoutes";
 dotenv.config();
 
 connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -27,6 +33,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/novedades", validarToken, novedadRoutes);
 app.use("/api/areas", validarToken, areaRoutes);
+app.use("/api/usuarios", userRoutes);
 
 app.use(errorHandler);
 
