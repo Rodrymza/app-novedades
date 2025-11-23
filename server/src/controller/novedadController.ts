@@ -83,7 +83,6 @@ export const crearNovedad: RequestHandler<
 
     const novedadRespuesta = NovedadMapper.toDto(novedadPoblada);
     return res.status(201).json(novedadRespuesta);
-    
   } catch (error) {
     next(error);
   }
@@ -94,13 +93,12 @@ export const findAllNovedades: RequestHandler = async (req, res, next) => {
     const novedades = await Novedad.find()
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
 
     const novedadesFormateadas = novedades.map((novedad) => {
       return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(novedadesFormateadas);
-    
   } catch (error) {
     next(error);
   }
@@ -109,36 +107,46 @@ export const findAllNovedades: RequestHandler = async (req, res, next) => {
 export const filtrarNovedades: RequestHandler<
   {},
   NovedadResponseData[],
-  FiltroNovedad,
+  FiltroNovedad, // Ahora incluye textoBusqueda
   {}
 > = async (req, res, next) => {
   try {
-    const { usuario_id, area_id, tags } = req.body;
+    const { usuario_id, area_id, tags, fechaInicio, fechaFin, textoBusqueda } =
+      req.body;
 
     const filtro: FilterQuery<any> = {};
+
+    //Logica de texto libre
+    if (textoBusqueda) {
+      filtro.$text = { $search: textoBusqueda };
+    }
+
+    // Lógica de Rango de Fechas
+    if (fechaInicio || fechaFin) {
+      filtro.createdAt = {};
+      if (fechaInicio) filtro.createdAt.$gte = new Date(fechaInicio);
+      if (fechaFin) filtro.createdAt.$lte = new Date(fechaFin);
+    }
 
     if (usuario_id) {
       filtro.usuario = usuario_id;
     }
-
     if (area_id) {
       filtro.area = area_id;
     }
-
     if (tags && tags.length > 0) {
       filtro.etiquetas = { $in: tags };
-    }
+    } // 3. Ejecutamos la consulta
 
     const novedades = await Novedad.find(filtro)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
 
     const respuesta = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad)
+      return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(respuesta);
-    
   } catch (error) {
     next(error);
   }
