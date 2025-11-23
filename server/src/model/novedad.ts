@@ -33,6 +33,7 @@ const novedadSchema = new Schema(
     timestamps: true,
   }
 );
+novedadSchema.index({ contenido: "text" });
 
 export default model("Novedad", novedadSchema);
 export type INovedadDocument = HydratedDocument<INovedad>;
