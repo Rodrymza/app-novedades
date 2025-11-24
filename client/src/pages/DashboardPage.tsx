@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { NovedadCard } from "../components/novedad/NovedadCard";
 import { useNovedades } from "../hooks/useNovedades";
 import { Link } from "react-router-dom";
-import { NovedadFilters } from "../components/layout/NovedadFilters";
+import { NovedadFilters } from "../components/novedad/NovedadFilters";
 import type { FiltroNovedad } from "../types/novedad.interface";
 
 const DashboardPage = () => {
