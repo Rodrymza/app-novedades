@@ -10,4 +10,8 @@ export const UserService = {
     const respuesta = await axiosClient.get<UserList[]>("/usuarios/user-list/");
     return respuesta.data;
   },
+  getProfile: async () => {
+    const respuesta = await axiosClient.get<UserResponse>("/auth/profile");
+    return respuesta.data;
+  },
 };
