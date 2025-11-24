@@ -142,7 +142,7 @@ export const NovedadFilters = ({
             >
               <option value="">Todos</option>
               {authors.map((a) => (
-                <option key={a.id} value={a.id}>
+                <option key={a._id} value={a._id}>
                   {a.apellido}, {a.nombre}
                 </option>
               ))}
