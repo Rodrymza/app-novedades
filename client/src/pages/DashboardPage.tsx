@@ -75,7 +75,7 @@ const DashboardPage = () => {
 
         {/* Grilla de Novedades */}
         {!loading && novedades.length > 0 && (
-          <div className="grid grid-cols-1 gap-6">
+          <div className="flex flex-col items-center gap-6">
             {novedades.map((novedad) => (
               // Asegúrate de pasar la prop correcta 'novedad={novedad}'
               <NovedadCard key={novedad.id} novedad={novedad} />

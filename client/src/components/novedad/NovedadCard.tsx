@@ -22,33 +22,33 @@ export const NovedadCard = ({ novedad }: Props) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-300 hover:shadow-md cursor-default transition-shadow duration-300 overflow-hidden flex flex-col h-full">
+    <div className="bg-white w-[80%] rounded-xl shadow-sm border border-gray-300 hover:shadow-md cursor-default transition-shadow duration-300 overflow-hidden flex flex-col h-full">
       {/* --- ENCABEZADO --- */}
       <div className="p-4 flex justify-between items-start bg-gray-50 border-b border-gray-100">
         <div className="flex items-center gap-3">
           {/* Avatar con iniciales */}
-          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm">
+          <div className="w-15 h-15 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl">
             {getIniciales(novedad.usuario.nombre, novedad.usuario.apellido)}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-gray-800">
+            <h3 className="text-lg font-bold text-gray-800">
               {novedad.usuario.apellido}, {novedad.usuario.nombre}
             </h3>
-            <p className="text-xs text-gray-500 flex items-center gap-1">
+            <p className="text-base text-gray-500 flex items-center gap-1">
               @{novedad.usuario.username}
             </p>
           </div>
         </div>
 
         {/* Badge del Área */}
-        <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full font-medium border border-indigo-200">
+        <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium border border-indigo-200 text-base">
           {novedad.area.nombre}
         </span>
       </div>
 
       {/* --- CONTENIDO --- */}
       <div className="p-4 flex-grow">
-        <p className="text-gray-600 text-sm whitespace-pre-wrap leading-relaxed">
+        <p className="text-gray-600 text-base whitespace-pre-wrap leading-relaxed">
           {novedad.contenido}
         </p>
       </div>
@@ -61,7 +61,7 @@ export const NovedadCard = ({ novedad }: Props) => {
             novedad.etiquetas.map((tag: string, index: number) => (
               <span
                 key={index}
-                className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md"
+                className="text-sm bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md"
               >
                 #{tag}
               </span>
