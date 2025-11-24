@@ -10,6 +10,7 @@ import DashboardPage from "./pages/DashboardPage";
 import { ProtectedAdminUser } from "./components/protectedAdminUser";
 import CreateNovedadPage from "./pages/CreateNovedadPage";
 import AdminAreasPage from "./pages/AdminAreasPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/perfil" element={<h1>Mi Perfil</h1>} />
               <Route path="/crear-novedad" element={<CreateNovedadPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
 
