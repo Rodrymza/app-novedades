@@ -124,8 +124,22 @@ export const filtrarNovedades: RequestHandler<
     // Lógica de Rango de Fechas
     if (fechaInicio || fechaFin) {
       filtro.createdAt = {};
-      if (fechaInicio) filtro.createdAt.$gte = new Date(fechaInicio);
-      if (fechaFin) filtro.createdAt.$lte = new Date(fechaFin);
+
+      if (fechaInicio) {
+        const [y, m, d] = fechaInicio.split("-");
+        filtro.createdAt.$gte = new Date(
+          parseInt(y),
+          parseInt(m) - 1,
+          parseInt(d)
+        );
+      }
+
+      if (fechaFin) {
+        const [y, m, d] = fechaFin.split("-");
+        const fecha = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+        fecha.setHours(23, 59, 59, 999);
+        filtro.createdAt.$lte = fecha;
+      }
     }
 
     if (usuario_id) {
