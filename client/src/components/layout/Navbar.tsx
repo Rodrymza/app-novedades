@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FaHome, FaUsers, FaLock, FaSignOutAlt } from "react-icons/fa"; // Iconos
+import { FaHome, FaUsers, FaLock, FaSignOutAlt, FaUser } from "react-icons/fa"; // Iconos
 import { useAuth } from "../../context/AuthContext";
 
 export const Navbar = () => {
@@ -21,10 +21,17 @@ export const Navbar = () => {
           {/* Botón Home/Dashboard */}
           <Link
             to="/dashboard"
-            className="p-2 rounded-full hover:bg-blue-700 transition duration-150 text-white"
+            className="p-2 rounded-full hover:bg-blue-700 transition duration-150 text-white flex gap-2"
             title="Dashboard Principal"
           >
-            <FaHome className="w-5 h-5" />
+            <FaHome className="w-5 h-5" /> Inicio
+          </Link>
+          <Link
+            to="/profile"
+            className="p-2 rounded-full hover:bg-blue-700 transition duration-150 text-white flex gap-2"
+            title="Mi Perfil"
+          >
+            <FaUser className="w-5 h-5" /> Mi Perfil
           </Link>
         </div>
 
