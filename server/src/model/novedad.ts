@@ -28,6 +28,15 @@ const novedadSchema = new Schema(
       type: [String],
       default: [],
     },
+    is_deleted: {
+      type: Boolean,
+      default: false,
+    },
+    audit_delete: {
+      fecha: { type: Date },
+      usuario_id: { type: Schema.Types.ObjectId, ref: "Usuario" },
+      motivo: { type: String },
+    },
   },
   {
     timestamps: true,
