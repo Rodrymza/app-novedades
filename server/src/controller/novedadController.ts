@@ -13,6 +13,7 @@ import {
 } from "../interfaces/novedad.interface";
 import { Rol } from "../interfaces/user.interfaces";
 import { AppError } from "../errors/appError";
+import { validarObjectId } from "../utils/validateObjectId";
 
 export const crearNovedad: RequestHandler<
   {},
@@ -210,15 +211,35 @@ export const eliminarNovedad: RequestHandler<
     if (!motivo) erroresValidacion.push("Falta motivo de eliminacion");
 
     if (erroresValidacion.length > 0) {
-      throw new AppError(erroresValidacion.join(", "), 400, MENSAJE_ERROR);
+      throw new AppError(MENSAJE_ERROR, 400, erroresValidacion.join(", "));
     }
+    validarObjectId(usuario_id!, "usuario_id");
+    validarObjectId(novedad_id, "novedad_id");
 
     const usuario = await Usuario.findById(usuario_id);
     if (!usuario) {
       throw new AppError(
-        "No se encontro usuario con el id especificado",
+        "El usuario no existe",
         404,
-        MENSAJE_ERROR
+        "No se encontro usuario con el id especificado"
+      );
+    }
+
+    const novedad = await Novedad.findById(novedad_id);
+
+    if (!novedad) {
+      throw new AppError(
+        "Novedad no existe",
+        404,
+        "No se encontro novedad con el id especificado"
+      );
+    }
+
+    if (novedad.is_deleted) {
+      throw new AppError(
+        "Error de eliminacion",
+        400,
+        "La novedad ya se encuentra eliminada"
       );
     }
 
@@ -233,7 +254,9 @@ export const eliminarNovedad: RequestHandler<
         },
       },
       { new: true }
-    );
+    )
+      .populate("usuario", "nombre apellido username")
+      .populate("area", "nombre");
 
     if (!novedadActualizada) {
       throw new AppError(
