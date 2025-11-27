@@ -118,6 +118,7 @@ export const findAllNovedades: RequestHandler = async (req, res, next) => {
     const novedades = await Novedad.find(filtroBorrados)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
+      .populate("audit_delete.usuario_id", "nombre apellido username")
       .sort({ createdAt: -1 });
 
     const novedadesFormateadas = novedades.map((novedad) => {
@@ -140,6 +141,8 @@ export const filtrarNovedades: RequestHandler<
       req.body;
 
     const filtro: FilterQuery<any> = {};
+
+    filtro.is_deleted = false;
 
     //Logica de texto libre
     if (textoBusqueda) {
@@ -256,7 +259,8 @@ export const eliminarNovedad: RequestHandler<
       { new: true }
     )
       .populate("usuario", "nombre apellido username")
-      .populate("area", "nombre");
+      .populate("area", "nombre")
+      .populate("audit_delete.usuario_id", "nombre apellido username");
 
     if (!novedadActualizada) {
       throw new AppError(
