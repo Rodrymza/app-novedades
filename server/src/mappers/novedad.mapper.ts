@@ -21,11 +21,15 @@ export class NovedadMapper {
       is_deleted: doc.is_deleted,
     };
     if (rol === Rol.SUPERVISOR && doc.is_deleted) {
+      const usuarioDelete = doc.audit_delete?.usuario_id;
       novedadDto.audit_delete = {
         fecha: doc.audit_delete?.fecha.toISOString() || "No se encontro fecha",
-        usuario_id:
-          doc.audit_delete?.usuario_id.toString() ||
-          "No se encontro usuario_id",
+        usuario: {
+          id: usuarioDelete?._id.toString() || "Sin ID",
+          nombre: usuarioDelete?.nombre || "Sin nombre",
+          apellido: usuarioDelete?.apellido || "Sin apellido",
+          username: usuarioDelete?.username || "Sin username",
+        },
         motivo: doc.audit_delete?.motivo || "No se encontro motivo",
       };
     }
