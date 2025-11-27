@@ -6,7 +6,7 @@ export function validarObjectId(id: string, fieldName = "id") {
     throw new AppError(
       "Error de validacion",
       400,
-      `El ${fieldName} tiene un formato inválido`
+      `El campo ${fieldName} tiene un formato inválido`
     );
   }
 }
