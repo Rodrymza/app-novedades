@@ -1,10 +1,17 @@
 import { Router } from "express";
-import { crearNovedad, filtrarNovedades, findAllNovedades } from "../controller/novedadController";
+import {
+  crearNovedad,
+  eliminarNovedad,
+  filtrarNovedades,
+  findAllNovedades,
+} from "../controller/novedadController";
+import { esSupervisor, validarToken } from "../utils/tokenService";
 
 const novedadRoutes = Router();
 
-novedadRoutes.get("/", findAllNovedades )
-novedadRoutes.post("/", crearNovedad)
-novedadRoutes.post("/filtrar", filtrarNovedades)
+novedadRoutes.get("/", validarToken, findAllNovedades);
+novedadRoutes.post("/", validarToken, crearNovedad);
+novedadRoutes.post("/filtrar", validarToken, filtrarNovedades);
+novedadRoutes.post("/eliminar", validarToken, esSupervisor, eliminarNovedad);
 
 export default novedadRoutes;
