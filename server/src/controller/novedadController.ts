@@ -6,9 +6,13 @@ import { NovedadMapper } from "../mappers/novedad.mapper";
 import { FilterQuery } from "mongoose";
 import {
   CreateNovedad,
+  EliminarNovedad,
   FiltroNovedad,
+  NovedadResponse,
   NovedadResponseData,
 } from "../interfaces/novedad.interface";
+import { Rol } from "../interfaces/user.interfaces";
+import { AppError } from "../errors/appError";
 
 export const crearNovedad: RequestHandler<
   {},
@@ -56,17 +60,19 @@ export const crearNovedad: RequestHandler<
     ]);
 
     if (!usuario) {
-      return res.status(404).json({
-        message: "Error de usuario",
-        detail: "No se encontró un usuario con el id especificado",
-      });
+      throw new AppError(
+        "Usuario no autenticado",
+        401,
+        "Debes estar autenticado para ver las novedades"
+      );
     }
 
     if (!area) {
-      return res.status(404).json({
-        message: "Error de área",
-        detail: "No se encontró un área con el id especificado",
-      });
+      throw new AppError(
+        "Area no encontrada",
+        404,
+        "No se encontro el area con el id especificado"
+      );
     }
 
     const nuevaNovedad = await Novedad.create({
@@ -81,7 +87,10 @@ export const crearNovedad: RequestHandler<
       { path: "area", select: "nombre" },
     ]);
 
-    const novedadRespuesta = NovedadMapper.toDto(novedadPoblada);
+    const novedadRespuesta = NovedadMapper.toDto(
+      novedadPoblada,
+      usuario.rol as Rol
+    );
     return res.status(201).json(novedadRespuesta);
   } catch (error) {
     next(error);
@@ -90,13 +99,28 @@ export const crearNovedad: RequestHandler<
 
 export const findAllNovedades: RequestHandler = async (req, res, next) => {
   try {
-    const novedades = await Novedad.find()
+    //muestra solo novedades borradas a usuarios supervisores
+    let filtroBorrados = {};
+    const usuario = req.user;
+    if (usuario && usuario.rol == Rol.OPERADOR) {
+      filtroBorrados = {
+        is_deleted: false,
+      };
+    }
+    if (!usuario) {
+      throw new AppError(
+        "Usuario no autenticado",
+        401,
+        "Debes estar autenticado para ver las novedades"
+      );
+    }
+    const novedades = await Novedad.find(filtroBorrados)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
       .sort({ createdAt: -1 });
 
     const novedadesFormateadas = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad);
+      return NovedadMapper.toDto(novedad, usuario.rol as Rol);
     });
     return res.status(200).json(novedadesFormateadas);
   } catch (error) {
@@ -157,10 +181,72 @@ export const filtrarNovedades: RequestHandler<
       .populate("area", "nombre")
       .sort({ createdAt: -1 });
 
-    const respuesta = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad);
+    const respuesta: NovedadResponse[] = novedades.map((novedad) => {
+      return NovedadMapper.toDto(novedad, Rol.OPERADOR);
     });
     return res.status(200).json(respuesta);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const eliminarNovedad: RequestHandler<
+  {},
+  NovedadResponseData,
+  EliminarNovedad,
+  {}
+> = async (req, res, next) => {
+  const MENSAJE_ERROR = "Error de validación al eliminar la novedad";
+  try {
+    const { novedad_id, fecha, motivo } = req.body;
+    const usuario_id = req.user?.id;
+    let errorMessage = [];
+    let erroresValidacion: string[] = [];
+
+    if (!usuario_id) erroresValidacion.push("Falta id de usuario");
+    if (!novedad_id) erroresValidacion.push("Falta id de novedad");
+
+    if (!fecha) erroresValidacion.push("Falta fecha de eliminacion");
+    if (!motivo) erroresValidacion.push("Falta motivo de eliminacion");
+
+    if (erroresValidacion.length > 0) {
+      throw new AppError(erroresValidacion.join(", "), 400, MENSAJE_ERROR);
+    }
+
+    const usuario = await Usuario.findById(usuario_id);
+    if (!usuario) {
+      throw new AppError(
+        "No se encontro usuario con el id especificado",
+        404,
+        MENSAJE_ERROR
+      );
+    }
+
+    const novedadActualizada = await Novedad.findByIdAndUpdate(
+      novedad_id,
+      {
+        is_deleted: true,
+        audit_delete: {
+          fecha: fecha,
+          usuario_id: usuario?._id,
+          motivo: motivo,
+        },
+      },
+      { new: true }
+    );
+
+    if (!novedadActualizada) {
+      throw new AppError(
+        "No se pudo realizar la eliminacion. Novedad no encontrada",
+        404,
+        MENSAJE_ERROR
+      );
+    }
+    const novedadRes = NovedadMapper.toDto(
+      novedadActualizada,
+      usuario.rol as Rol
+    );
+    return res.status(201).json(novedadRes);
   } catch (error) {
     next(error);
   }
