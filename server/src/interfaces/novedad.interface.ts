@@ -32,7 +32,12 @@ export interface NovedadResponse {
   is_deleted: boolean;
   audit_delete?: {
     fecha: string;
-    usuario_id: string;
+    usuario: {
+      id: string;
+      nombre: string;
+      apellido: string;
+      username: string;
+    };
     motivo: string;
   };
 }
