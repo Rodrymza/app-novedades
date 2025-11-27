@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express"; // <-- 1. Importa Request
 import { ErrorResponse } from "../interfaces/error.interface";
+import { AppError } from "../errors/appError";
 
 export const errorHandler = (
   err: any,
@@ -11,6 +12,12 @@ export const errorHandler = (
   let status = 500;
   let message = "Error interno del servidor";
   let detail = "Ocurrio un error desconocido";
+
+  if (err instanceof AppError) {
+    status = err.statusCode;
+    message = err.message;
+    detail = err.detail;
+  }
 
   if (err.name === "ValidationError") {
     status = 400;

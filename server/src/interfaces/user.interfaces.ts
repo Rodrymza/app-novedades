@@ -1,13 +1,18 @@
 import { Types } from "mongoose";
 import { ErrorResponse } from "./error.interface";
 
+export enum Rol {
+  OPERADOR = "OPERADOR",
+  SUPERVISOR = "SUPERVISOR",
+}
+
 export interface CreateUserBody {
   apellido: string;
   nombre: string;
   username: string;
   email: string;
   password: string;
-  rol?: "OPERADOR" | "SUPERVISOR";
+  rol?: Rol;
 }
 
 export interface UserResponse {
@@ -16,7 +21,7 @@ export interface UserResponse {
   nombre: string;
   username: string;
   email: string;
-  rol: "OPERADOR" | "SUPERVISOR";
+  rol: Rol;
 }
 
 export interface LoginUser {
