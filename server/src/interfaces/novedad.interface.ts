@@ -8,6 +8,12 @@ export interface CreateNovedad {
   etiquetas: string[];
 }
 
+export interface EliminarNovedad {
+  novedad_id: Types.ObjectId;
+  fecha: Date;
+  motivo: string;
+}
+
 export interface NovedadResponse {
   id: string;
   contenido: string;
@@ -23,6 +29,12 @@ export interface NovedadResponse {
   };
   etiquetas?: string[];
   fecha: string;
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: string;
+    usuario_id: string;
+    motivo: string;
+  };
 }
 
 export interface FiltroNovedad {
