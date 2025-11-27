@@ -9,7 +9,7 @@ export interface CreateNovedad {
 }
 
 export interface EliminarNovedad {
-  novedad_id: Types.ObjectId;
+  novedad_id: string;
   fecha: Date;
   motivo: string;
 }
