@@ -22,6 +22,16 @@ export interface UserResponse {
   username: string;
   email: string;
   rol: Rol;
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: string;
+    usuario: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    };
+    motivo: string;
+  };
 }
 
 export interface LoginUser {
