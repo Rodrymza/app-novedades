@@ -1,4 +1,4 @@
-import { Document, HydratedDocument, model, Schema, Types } from "mongoose";
+import { HydratedDocument, model, Schema, Types } from "mongoose";
 
 export type Rol = "OPERADOR" | "SUPERVISOR";
 
@@ -66,21 +66,12 @@ const userShema = new Schema<IUsuario>(
       },
       motivo: { type: String },
     },
-    audit_restore: {
-      fecha: { type: Date },
-      usuario_id: {
-        type: Schema.Types.ObjectId,
-        ref: "Usuario",
-      },
-      motivo: { type: String },
-    },
   },
   {
     timestamps: true,
   }
 );
 
-userShema.index({ username: 1 });
 userShema.index({ email: 1 });
 userShema.index({ is_deleted: 1 });
 
