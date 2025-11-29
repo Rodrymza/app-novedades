@@ -43,7 +43,7 @@ export const Navbar = () => {
               to="/admin/gestion-usuarios"
               className="text-blue-200 hover:text-white transition flex items-center gap-1"
             >
-              <FaUsers className="w-4 h-4" /> Registrar Usuario
+              <FaUsers className="w-4 h-4" /> Gestion de Usuarios
             </Link>
           )}
 
