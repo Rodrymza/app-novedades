@@ -11,11 +11,13 @@ import { ProtectedAdminUser } from "./components/protectedAdminUser";
 import CreateNovedadPage from "./pages/CreateNovedadPage";
 import AdminAreasPage from "./pages/AdminAreasPage";
 import ProfilePage from "./pages/ProfilePage";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
     // 1. AuthProvider envuelve TODO para que el 'useContext' funcione
     <AuthProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <BrowserRouter>
         <Routes>
           {/* Rutas Públicas (Cualquiera puede entrar) */}
