@@ -1,9 +1,15 @@
 import { Router } from "express";
-import { crearArea, findallAreas } from "../controller/areaController";
+import {
+  crearArea,
+  eliminarArea,
+  findallAreas,
+} from "../controller/areaController";
+import { esSupervisor, validarToken } from "../utils/tokenService";
 
 const areaRoutes = Router();
 
-areaRoutes.get("/", findallAreas);
-areaRoutes.post("/", crearArea);
+areaRoutes.get("/", validarToken, findallAreas);
+areaRoutes.post("/", validarToken, esSupervisor, crearArea);
+areaRoutes.post("/eliminar", validarToken, esSupervisor, eliminarArea);
 
 export default areaRoutes;

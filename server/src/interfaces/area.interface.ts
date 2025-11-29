@@ -9,6 +9,7 @@ export interface AreaResponse {
   id: string;
   nombre: string;
   descripcion: string;
+  is_deleted: boolean;
 }
 
 export type AreaResponseData = AreaResponse | ErrorResponse;
