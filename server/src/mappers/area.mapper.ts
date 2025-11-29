@@ -6,6 +6,7 @@ export class AreaMapper {
       id: doc._id,
       nombre: doc.nombre,
       descripcion: doc.descripcion,
+      is_deleted: doc.is_deleted,
     };
   }
 }
