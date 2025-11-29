@@ -1,7 +1,9 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import Area from "../model/area";
 import { AreaResponseData, ICreateArea } from "../interfaces/area.interface";
 import { AreaMapper } from "../mappers/area.mapper";
+import { FilterQuery } from "mongoose";
+import { AppError } from "../errors/appError";
 
 export const crearArea: RequestHandler<
   {},
@@ -44,7 +46,12 @@ export const crearArea: RequestHandler<
 
 export const findallAreas: RequestHandler = async (req, res, next) => {
   try {
-    const areas = await Area.find();
+    const { todas } = req.query;
+    const filtro: FilterQuery<any> = {};
+    if (!todas) {
+      filtro.is_deleted = false;
+    }
+    const areas = await Area.find(filtro).sort({ nombre: 1 });
 
     const areasFormateadas: AreaResponseData[] = areas.map((area) => {
       return AreaMapper.toDTO(area);
@@ -54,4 +61,28 @@ export const findallAreas: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const eliminarArea = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const errores: string[] = [];
+    const { id } = req.body;
+    if (!id) {
+      errores.push("Falta campo id de area a borrar");
+    }
+    const area = await Area.findByIdAndUpdate(id, { is_deleted: true });
+    if (!area) {
+      errores.push("No se encontro area con el id especificado");
+    }
+    if (errores.length > 0) {
+      throw new AppError("Error al elminar area", 400, errores.join(", "));
+    }
+    return res
+      .status(200)
+      .json({ messsage: `Area ${area?.nombre} eliminada correctamente` });
+  } catch (error) {}
 };
