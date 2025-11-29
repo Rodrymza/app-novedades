@@ -10,6 +10,6 @@ const userRoutes = Router();
 
 userRoutes.get("/", validarToken, esSupervisor, findAllUsers);
 userRoutes.get("/user-list", validarToken, getUsersList);
-userRoutes.delete("/", validarToken, esSupervisor, eliminarUsuario);
+userRoutes.put("/eliminar", validarToken, esSupervisor, eliminarUsuario);
 
 export default userRoutes;
