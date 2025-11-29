@@ -17,7 +17,7 @@ function App() {
   return (
     // 1. AuthProvider envuelve TODO para que el 'useContext' funcione
     <AuthProvider>
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <BrowserRouter>
         <Routes>
           {/* Rutas Públicas (Cualquiera puede entrar) */}
