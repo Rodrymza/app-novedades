@@ -9,6 +9,7 @@ import {
 import { hashearPassword, validarPassword } from "../utils/hashPassword";
 import { generarToken } from "../utils/tokenService";
 import { UsuarioMapper } from "../mappers/usuario.mapper";
+import { AppError } from "../errors/appError";
 
 export const crearUsuario: RequestHandler<
   {}, // 1er Genérico: Params
@@ -27,13 +28,10 @@ export const crearUsuario: RequestHandler<
     if (userExists) {
       const message =
         userExists.email === email
-          ? "El email ya está registrado"
-          : "El nombre de usuario ya está en uso";
+          ? `El email '${email}' ya está registrado`
+          : `El nombre de usuario '${username}' ya está en uso`;
 
-      return res.status(400).json({
-        message: "Error de validación",
-        detail: message,
-      });
+      throw new AppError("Error de validacion", 400, message);
     }
     const hashedPassword = await hashearPassword(password);
 

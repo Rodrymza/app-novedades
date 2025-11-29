@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Definimos el estado inicial para limpiar el formulario fácilmente después
 const initialState = {
@@ -17,6 +17,7 @@ const RegisterUserPage = () => {
   const [formData, setFormData] = useState(initialState);
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Traemos la función de registro del contexto
   const { signup, errors: contextErrors, clearErrors } = useAuth();
@@ -58,14 +59,15 @@ const RegisterUserPage = () => {
       const { confirmPassword, ...dataToSend } = formData;
 
       // 4. Llamamos al backend
-      await signup(dataToSend);
-
-      // 5. Éxito: Limpiamos formulario y mostramos mensaje
-      setSuccessMsg(`Usuario ${formData.username} creado con éxito.`);
-      setFormData(initialState);
+      const usuarioRegistrado = await signup(dataToSend);
 
       // Opcional: Hacer scroll arriba si el form es muy largo
-      window.scrollTo(0, 0);
+      if (usuarioRegistrado) {
+        setTimeout(() => {
+          setFormData(initialState);
+          navigate("/admin/gestion-usuarios");
+        }, 1500);
+      }
     } catch (error) {
       // El AuthContext ya maneja los errores del backend (errors)
       console.error("Error al crear usuario", error);

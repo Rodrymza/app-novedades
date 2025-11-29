@@ -13,6 +13,7 @@ import type {
 } from "../types/user.interfaces";
 import { AuthService } from "../services/auth.service";
 import { UserService } from "../services/user.service";
+import toast from "react-hot-toast";
 
 // Definimos qué datos y funciones tendrá nuestro contexto
 interface AuthContextType {
@@ -21,7 +22,7 @@ interface AuthContextType {
   errors: string[]; // Array de mensajes de error para mostrar en las alertas
   loading: boolean; // Vital para saber si estamos comprobando la sesión
   signin: (user: LoginUser) => Promise<void>;
-  signup: (user: CreateUserBody) => Promise<UserResponse[] | void>;
+  signup: (user: CreateUserBody) => Promise<boolean | null>;
   logout: () => Promise<void>;
   getUsers: () => Promise<UserResponse[] | void>;
   clearErrors: () => void; // Para limpiar las alertas manualmente si es necesario
@@ -49,11 +50,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // --- Función de Registro (Solo para Supervisores, pero la lógica va aquí) ---
   const signup = async (user: CreateUserBody) => {
     try {
-      const res = await AuthService.register(user);
-      console.log("Usuario registrado:", res);
+      await toast.promise(AuthService.register(user), {
+        loading: "Creando Usuario...",
+        success: `Usuario ${user.username} Registrado!`,
+        error: (err) => {
+          if (err instanceof AxiosError && err.response?.data) {
+            return err.response.data.detail || "Erro al registrar el usuario";
+          }
+          return "Ocurrio un error inesperado";
+        },
+      });
+      return true;
       // Opcional: Podríamos loguearlo automáticamente o solo notificar éxito
     } catch (error) {
-      handleError(error);
+      console.error(error);
+      return false;
     }
   };
 

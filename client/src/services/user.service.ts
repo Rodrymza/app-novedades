@@ -1,5 +1,9 @@
 import { axiosClient } from "../api/axios";
-import type { UserList, UserResponse } from "../types/user.interfaces";
+import type {
+  IDeleteUser,
+  UserList,
+  UserResponse,
+} from "../types/user.interfaces";
 
 export const UserService = {
   getUsers: async (): Promise<UserResponse[]> => {
@@ -12,6 +16,13 @@ export const UserService = {
   },
   getProfile: async () => {
     const respuesta = await axiosClient.get<UserResponse>("/auth/profile");
+    return respuesta.data;
+  },
+  deleteUser: async (reqEliminar: IDeleteUser) => {
+    const respuesta = await axiosClient.put<UserResponse>(
+      "/usuarios/eliminar",
+      reqEliminar
+    );
     return respuesta.data;
   },
 };

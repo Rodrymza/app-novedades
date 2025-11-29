@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react";
-import type { UserResponse } from "../types/user.interfaces";
+import type { IDeleteUser, UserResponse } from "../types/user.interfaces";
 import { UserService } from "../services/user.service";
+import { AxiosError } from "axios";
+import toast from "react-hot-toast";
 
 export const useUsers = () => {
   const [usuarios, setUsuarios] = useState<UserResponse[]>([]);
@@ -24,6 +26,31 @@ export const useUsers = () => {
     }
   }, []);
 
+  const borrarUsuario = useCallback(async (reqEliminar: IDeleteUser) => {
+    try {
+      await toast.promise(UserService.deleteUser(reqEliminar), {
+        loading: "Eliminando usuario...",
+        success: "Usuario eliminado correctamente",
+        error: (err) => {
+          // AQUÍ CAPTURAMOS TU ERROR DE BACKEND
+          if (err instanceof AxiosError && err.response?.data) {
+            // Tu backend devuelve { message: "...", detail: "..." }
+            // Mostramos el 'detail' que es más explicativo ("No puedes eliminar tu propia cuenta")
+            return err.response.data.detail || "Error al eliminar";
+          }
+          return "Ocurrió un error inesperado";
+        },
+      });
+
+      // Si salió bien, recargamos la lista
+      traerUsuarios();
+    } catch (error) {
+      setError("No se pudo eliminar el usuario");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const getPerfil = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -42,6 +69,7 @@ export const useUsers = () => {
   return {
     error,
     traerUsuarios,
+    borrarUsuario,
     usuarios,
     loading,
     getPerfil,
