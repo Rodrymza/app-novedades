@@ -76,6 +76,14 @@ export const crearNovedad: RequestHandler<
       );
     }
 
+    if (area.is_deleted) {
+      throw new AppError(
+        `Área ${area.nombre} elimininada`,
+        400,
+        "No se pueden generar novedades sobre áreas eliminadas"
+      );
+    }
+
     const nuevaNovedad = await Novedad.create({
       contenido: contenido.trim(),
       usuario: user_id,
