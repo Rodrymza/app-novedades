@@ -1,15 +1,18 @@
 import { FaEdit, FaTrash, FaCheckCircle, FaBan } from "react-icons/fa";
 import type { UserResponse } from "../../types/user.interfaces";
+import { MdRestore } from "react-icons/md";
+import toast from "react-hot-toast";
 
 interface Props {
   user: UserResponse;
   onDelete: (id: string) => void;
   onEdit: (id: string) => void;
+  onRecovery: (id: string) => void;
 }
 
-export const UserRow = ({ user, onDelete, onEdit }: Props) => {
+export const UserRow = ({ user, onDelete, onEdit, onRecovery }: Props) => {
   const rowClasses = user.is_deleted
-    ? "bg-gray-100 opacity-60"
+    ? "bg-gray-100 opacity-70"
     : "hover:bg-gray-50 transition-colors";
 
   return (
@@ -54,20 +57,32 @@ export const UserRow = ({ user, onDelete, onEdit }: Props) => {
 
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <button
-          onClick={() => onEdit(user.id)}
+          onClick={() =>
+            user.is_deleted
+              ? toast.error("No puedes editar un usuario eliminado")
+              : onEdit(user.id)
+          }
           className="text-indigo-600 hover:text-indigo-900 mr-4 transition disabled:opacity-50"
-          disabled={user.is_deleted}
+          title="Editar"
         >
           <FaEdit className="w-5 h-5" />
         </button>
 
-        {!user.is_deleted && (
+        {!user.is_deleted ? (
           <button
             onClick={() => onDelete(user.id)}
             className="text-red-600 hover:text-red-900 transition"
             title="Eliminar"
           >
             <FaTrash className="w-5 h-5" />
+          </button>
+        ) : (
+          <button
+            onClick={() => onRecovery(user.id)}
+            className="text-orange-600 hover:text-red-900 transition"
+            title="Restaurar"
+          >
+            <MdRestore className="w-5 h-5" />
           </button>
         )}
       </td>
