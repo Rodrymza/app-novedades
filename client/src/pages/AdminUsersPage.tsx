@@ -42,8 +42,11 @@ const AdminUserPage = () => {
   };
 
   const handleEditUser = (id: string) => {
-    console.log("Navegar a editar:", id);
-    // proximo manejo a editar
+    toast.success(`Proximo a desarrollar...\nId usuario a editar: ${id}`);
+  };
+
+  const handleRecovery = (id: string) => {
+    toast.success(`Proximo a desarrollar..\n.Id usuario a recuperar: ${id}`);
   };
 
   return (
@@ -101,6 +104,7 @@ const AdminUserPage = () => {
                   user={user}
                   onDelete={handleDeleteUser}
                   onEdit={handleEditUser}
+                  onRecovery={handleRecovery}
                 />
               ))
             )}
