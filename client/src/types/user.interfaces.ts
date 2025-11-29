@@ -28,4 +28,8 @@ export interface UserList {
   nombre: string;
   apellido: string;
 }
+export interface IDeleteUser {
+  motivo: string;
+  id_usuario: string;
+}
 export type UserResponseData = UserResponse | ErrorResponse;
