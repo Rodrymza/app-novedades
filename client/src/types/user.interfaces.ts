@@ -16,6 +16,7 @@ export interface UserResponse {
   username: string;
   email: string;
   rol: "OPERADOR" | "SUPERVISOR";
+  is_deleted: boolean;
 }
 
 export interface LoginUser {
