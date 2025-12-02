@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
-import { FaHome, FaUsers, FaLock, FaSignOutAlt, FaUser } from "react-icons/fa"; // Iconos
+import {
+  FaHome,
+  FaUsers,
+  FaLock,
+  FaSignOutAlt,
+  FaUser,
+  FaBook,
+} from "react-icons/fa"; // Iconos
 import { useAuth } from "../../context/AuthContext";
 
 export const Navbar = () => {
@@ -54,6 +61,16 @@ export const Navbar = () => {
               className="text-blue-200 hover:text-white transition flex items-center gap-1"
             >
               <FaLock className="w-4 h-4" /> Gestión de Áreas
+            </Link>
+          )}
+
+          {/* Gestionar novedades, otro enlace de administración */}
+          {isSupervisor && (
+            <Link
+              to="/admin/gestion-novedades"
+              className="text-blue-200 hover:text-white transition flex items-center gap-1"
+            >
+              <FaBook className="w-4 h-4" /> Gestion de Novedades
             </Link>
           )}
 
