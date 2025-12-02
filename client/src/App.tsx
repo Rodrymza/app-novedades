@@ -12,6 +12,8 @@ import CreateNovedadPage from "./pages/CreateNovedadPage";
 import AdminAreasPage from "./pages/AdminAreasPage";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
+import AuditNovedadesPage from "./pages/AdminNovedadesPage";
+import AdminNovedadesPage from "./pages/AdminNovedadesPage";
 
 function App() {
   return (
@@ -47,6 +49,10 @@ function App() {
                 element={<AdminUsersPage />}
               />
               <Route path="/admin/gestion-areas" element={<AdminAreasPage />} />
+              <Route
+                path="/admin/gestion-novedades"
+                element={<AdminNovedadesPage />}
+              />
             </Route>
           </Route>
         </Routes>
