@@ -96,10 +96,7 @@ export const crearNovedad: RequestHandler<
       { path: "area", select: "nombre" },
     ]);
 
-    const novedadRespuesta = NovedadMapper.toDto(
-      novedadPoblada,
-      usuario.rol as Rol
-    );
+    const novedadRespuesta = NovedadMapper.toDto(novedadPoblada);
     return res.status(201).json(novedadRespuesta);
   } catch (error) {
     next(error);
@@ -108,29 +105,13 @@ export const crearNovedad: RequestHandler<
 
 export const findAllNovedades: RequestHandler = async (req, res, next) => {
   try {
-    //muestra solo novedades borradas a usuarios supervisores
-    let filtroBorrados = {};
-    const usuario = req.user;
-    if (usuario && usuario.rol == Rol.OPERADOR) {
-      filtroBorrados = {
-        is_deleted: false,
-      };
-    }
-    if (!usuario) {
-      throw new AppError(
-        "Usuario no autenticado",
-        401,
-        "Debes estar autenticado para ver las novedades"
-      );
-    }
-    const novedades = await Novedad.find(filtroBorrados)
+    const novedades = await Novedad.find({ is_deleted: false })
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .populate("audit_delete.usuario_id", "nombre apellido username")
       .sort({ createdAt: -1 });
 
     const novedadesFormateadas = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad, usuario.rol as Rol);
+      return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(novedadesFormateadas);
   } catch (error) {
@@ -145,12 +126,27 @@ export const filtrarNovedades: RequestHandler<
   {}
 > = async (req, res, next) => {
   try {
-    const { usuario_id, area_id, tags, fechaInicio, fechaFin, textoBusqueda } =
-      req.body;
+    const {
+      usuario_id,
+      area_id,
+      tags,
+      fechaInicio,
+      fechaFin,
+      textoBusqueda,
+      is_deleted,
+    } = req.body;
 
     const filtro: FilterQuery<any> = {};
 
     filtro.is_deleted = false;
+
+    if (req.user?.rol === Rol.SUPERVISOR) {
+      if (is_deleted !== undefined && is_deleted !== null) {
+        filtro.is_deleted = is_deleted;
+      } else {
+        delete filtro.is_deleted;
+      }
+    }
 
     //Logica de texto libre
     if (textoBusqueda) {
@@ -191,10 +187,11 @@ export const filtrarNovedades: RequestHandler<
     const novedades = await Novedad.find(filtro)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
+      .populate("audit_delete.usuario_id", "apellido nombre username")
       .sort({ createdAt: -1 });
 
     const respuesta: NovedadResponse[] = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad, Rol.OPERADOR);
+      return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(respuesta);
   } catch (error) {
@@ -210,15 +207,13 @@ export const eliminarNovedad: RequestHandler<
 > = async (req, res, next) => {
   const MENSAJE_ERROR = "Error de validación al eliminar la novedad";
   try {
-    const { novedad_id, fecha, motivo } = req.body;
+    const { novedad_id, motivo } = req.body;
     const usuario_id = req.user?.id;
-    let errorMessage = [];
     let erroresValidacion: string[] = [];
 
     if (!usuario_id) erroresValidacion.push("Falta id de usuario");
     if (!novedad_id) erroresValidacion.push("Falta id de novedad");
 
-    if (!fecha) erroresValidacion.push("Falta fecha de eliminacion");
     if (!motivo) erroresValidacion.push("Falta motivo de eliminacion");
 
     if (erroresValidacion.length > 0) {
@@ -253,6 +248,7 @@ export const eliminarNovedad: RequestHandler<
         "La novedad ya se encuentra eliminada"
       );
     }
+    const fecha = Date.now();
 
     const novedadActualizada = await Novedad.findByIdAndUpdate(
       novedad_id,
@@ -277,10 +273,7 @@ export const eliminarNovedad: RequestHandler<
         MENSAJE_ERROR
       );
     }
-    const novedadRes = NovedadMapper.toDto(
-      novedadActualizada,
-      usuario.rol as Rol
-    );
+    const novedadRes = NovedadMapper.toDto(novedadActualizada);
     return res.status(201).json(novedadRes);
   } catch (error) {
     next(error);
