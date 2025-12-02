@@ -12,6 +12,6 @@ const novedadRoutes = Router();
 novedadRoutes.get("/", validarToken, findAllNovedades);
 novedadRoutes.post("/", validarToken, crearNovedad);
 novedadRoutes.post("/filtrar", validarToken, filtrarNovedades);
-novedadRoutes.post("/eliminar", validarToken, esSupervisor, eliminarNovedad);
+novedadRoutes.put("/eliminar", validarToken, esSupervisor, eliminarNovedad);
 
 export default novedadRoutes;
