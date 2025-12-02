@@ -26,4 +26,12 @@ export const NovedadService = {
     );
     return respuesta.data;
   },
+  borrarNovedad: async (novedad_id: string, motivo: string) => {
+    const body = { novedad_id, motivo };
+    const respuesta = await axiosClient.put<NovedadResponse>(
+      "/novedades/eliminar",
+      body
+    );
+    return respuesta.data;
+  },
 };
