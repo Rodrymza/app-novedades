@@ -40,7 +40,7 @@ export interface FiltroNovedad {
   fechaInicio?: string | undefined;
   fechaFin?: string | undefined;
   textoBusqueda?: string | undefined;
-  is_deleted?: boolean;
+  is_deleted?: boolean | undefined;
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;

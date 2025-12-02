@@ -5,6 +5,7 @@ import type { FiltroNovedad } from "../types/novedad.interface";
 import { useNovedades } from "../hooks/useNovedades";
 import { NovedadCard } from "../components/novedad/NovedadCard";
 import { TextInputModal } from "../components/layout/TextInputModal";
+import { NovedadFilters } from "../components/novedad/NovedadFilters";
 
 // Definimos los tipos de pestañas disponibles
 type TabType = "TODAS" | "ACTIVAS" | "ELIMINADAS";
@@ -71,6 +72,15 @@ const AdminNovedadesPage = () => {
     setDeleteInputModal(false);
   };
 
+  const handleFilterSubmit = (filtrosRecibidos: FiltroNovedad) => {
+    filtrarNovedades(filtrosRecibidos);
+  };
+
+  // al limpiar los filtros se traen todas las novedades de nuevo
+  const handleFilterReset = () => {
+    filtrarNovedades({});
+  };
+
   return (
     <>
       <div className="p-6 bg-gray-50 min-h-screen">
@@ -98,6 +108,13 @@ const AdminNovedadesPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+          </div>
+          <div className="w-full sm:w-auto mb-4">
+            <NovedadFilters
+              onFilterSubmit={handleFilterSubmit}
+              onFilterReset={handleFilterReset}
+              loading={loading}
+            />
           </div>
 
           {/* --- SISTEMA DE PESTAÑAS (TABS) --- */}
