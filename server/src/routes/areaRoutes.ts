@@ -10,6 +10,6 @@ const areaRoutes = Router();
 
 areaRoutes.get("/", validarToken, findallAreas);
 areaRoutes.post("/", validarToken, esSupervisor, crearArea);
-areaRoutes.post("/eliminar", validarToken, esSupervisor, eliminarArea);
+areaRoutes.put("/eliminar", validarToken, esSupervisor, eliminarArea);
 
 export default areaRoutes;
