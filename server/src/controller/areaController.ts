@@ -4,6 +4,8 @@ import { AreaResponseData, ICreateArea } from "../interfaces/area.interface";
 import { AreaMapper } from "../mappers/area.mapper";
 import { FilterQuery } from "mongoose";
 import { AppError } from "../errors/appError";
+import { JwtPayload } from "../interfaces/jwt.interfaces";
+import { Rol } from "../interfaces/user.interfaces";
 
 export const crearArea: RequestHandler<
   {},
@@ -71,18 +73,52 @@ export const eliminarArea = async (
   try {
     const errores: string[] = [];
     const { id } = req.body;
+    const supervisor = req.user! as JwtPayload;
+
+    if (!supervisor) {
+      throw new AppError(
+        "Supervisor no autenticado",
+        401,
+        "Solo los supervisores autenticados pueden eliminar areas"
+      );
+    }
+    if (supervisor.rol != Rol.SUPERVISOR) {
+      throw new AppError(
+        "Error de autenticacion",
+        401,
+        "Solo los supervisores pueden eliminar areas"
+      );
+    }
+
     if (!id) {
       errores.push("Falta campo id de area a borrar");
     }
-    const area = await Area.findByIdAndUpdate(id, { is_deleted: true });
+    const area = await Area.findById(id);
     if (!area) {
-      errores.push("No se encontro area con el id especificado");
+      throw new AppError(
+        "Error al borrar",
+        400,
+        "No se encontro area con el id especificado"
+      );
     }
+    if (area?.is_deleted) {
+      errores.push("No puedes eliminar un area que ya se encuentra borrada");
+    }
+
     if (errores.length > 0) {
       throw new AppError("Error al elminar area", 400, errores.join(", "));
     }
+
+    area.is_deleted = true;
+    await area.save();
+
     return res
       .status(200)
-      .json({ messsage: `Area ${area?.nombre} eliminada correctamente` });
-  } catch (error) {}
+      .json({
+        messsage: `Area ${area?.nombre} eliminada correctamente`,
+        area: AreaMapper.toDTO(area),
+      });
+  } catch (error) {
+    next(error);
+  }
 };
