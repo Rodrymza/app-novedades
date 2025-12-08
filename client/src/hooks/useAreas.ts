@@ -1,6 +1,9 @@
 import { useCallback, useState } from "react";
 import type { AreaResponse, CreateArea } from "../types/area.interface";
 import { AreaService } from "../services/area.service";
+import toast from "react-hot-toast";
+import { AxiosError } from "axios";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 export const useAreas = () => {
   const [areas, setAreas] = useState<AreaResponse[]>([]);
@@ -25,16 +28,35 @@ export const useAreas = () => {
 
   const crearArea = useCallback(
     async (datosArea: CreateArea) => {
-      setLoading(true);
-      setError(null);
       try {
-        const data = await AreaService.crearArea(datosArea);
+        const resultado = await toast.promise(
+          AreaService.crearArea(datosArea),
+          {
+            loading: "Creando área...",
+            success: "Área creada correctamente",
+            error: (err) => getErrorMessage(err),
+          }
+        );
         traerAreas();
-        return data;
+        return resultado;
       } catch (error) {
-        setError("No se pudo crear el área.");
-      } finally {
-        setLoading(false);
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas]
+  );
+
+  const eliminarArea = useCallback(
+    async (id: string) => {
+      try {
+        await toast.promise(AreaService.borrarArea(id), {
+          loading: "Eliminando area",
+          success: "Area eliminada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        traerAreas();
+      } catch (error) {
+        console.log(getErrorMessage(error));
       }
     },
     [traerAreas]
@@ -44,6 +66,7 @@ export const useAreas = () => {
     error,
     traerAreas,
     crearArea,
+    eliminarArea,
     areas,
     loading,
   };
