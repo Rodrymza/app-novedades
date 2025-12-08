@@ -34,6 +34,12 @@ export interface UserResponse {
   };
 }
 
+export interface UserUpdateDTO {
+  apellido?: string;
+  nombre?: string;
+  email?: string;
+}
+
 export interface LoginUser {
   username: string;
   password: string;
