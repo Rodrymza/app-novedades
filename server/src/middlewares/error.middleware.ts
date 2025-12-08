@@ -66,5 +66,9 @@ export const errorHandler = (
       detail = "Un campo único ya existe.";
     }
   }
+  //Errores normales de Js
+  else if (err instanceof Error) {
+    detail = err.message;
+  }
   res.status(status).json({ message, detail });
 };

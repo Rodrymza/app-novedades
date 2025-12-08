@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaPlus, FaMapMarkedAlt, FaTrashAlt } from "react-icons/fa";
 import type { CreateArea } from "../types/area.interface";
 import { useAreas } from "../hooks/useAreas";
+import toast from "react-hot-toast";
+import { ConfirmModal } from "../components/layout/ConfirmModal";
 
 // Estado inicial del formulario de creación
 const initialFormState: CreateArea = {
@@ -13,7 +15,10 @@ const AdminAreasPage = () => {
   // --- ESTADOS Y HOOKS ---
   const [formData, setFormData] = useState<CreateArea>(initialFormState);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-  const { areas, loading, error, traerAreas, crearArea } = useAreas();
+  const { areas, loading, error, traerAreas, crearArea, eliminarArea } =
+    useAreas();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<string | null>(null);
 
   // 1. Cargar las áreas al montar el componente (useEffect)
   useEffect(() => {
@@ -46,12 +51,25 @@ const AdminAreasPage = () => {
     }
   };
 
-  // Opcional: Función para borrar (Necesitas implementarla en el servicio y hook)
-  const handleDelete = (id: string) => {
-    if (window.confirm("¿Seguro que quieres borrar esta área?")) {
-      // Lógica para borrar (PENDIENTE: crear función en useAreas)
-      console.log(`Borrando área: ${id}`);
+  const openDeleteModal = (id: string) => {
+    setIdToDelete(id);
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!idToDelete) return;
+
+    try {
+      await eliminarArea(idToDelete);
+    } catch (error) {
+      toast.error("No se pudo eliminar el área");
+    } finally {
+      setIdToDelete(null);
     }
+  };
+
+  const handleDelete = (id: string) => {
+    openDeleteModal(id);
   };
 
   // --- Renderizado Condicional de Carga y Error ---
@@ -186,6 +204,13 @@ const AdminAreasPage = () => {
           </div>
         </div>
       </div>
+      <ConfirmModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={confirmDelete}
+        title="Confirmar eliminación"
+        message="¿Estás seguro de que deseas eliminar esta área? Esta acción no se puede deshacer."
+      />
     </>
   );
 };

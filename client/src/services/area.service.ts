@@ -11,4 +11,10 @@ export const AreaService = {
     const { data } = await axiosClient.post<AreaResponse>("/areas", nuevaArea);
     return data;
   },
+
+  borrarArea: async (id: string) => {
+    const datosBorrar = { id: id };
+    const { data } = await axiosClient.put("/areas/eliminar", datosBorrar);
+    return data;
+  },
 };
