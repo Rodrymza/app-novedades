@@ -2,7 +2,6 @@ import { useCallback, useState } from "react";
 import type { AreaResponse, CreateArea } from "../types/area.interface";
 import { AreaService } from "../services/area.service";
 import toast from "react-hot-toast";
-import { AxiosError } from "axios";
 import { getErrorMessage } from "../utils/getErrorMessage";
 
 export const useAreas = () => {
