@@ -5,7 +5,6 @@ import { AreaMapper } from "../mappers/area.mapper";
 import { FilterQuery } from "mongoose";
 import { AppError } from "../errors/appError";
 import { JwtPayload } from "../interfaces/jwt.interfaces";
-import { Rol } from "../interfaces/user.interfaces";
 
 export const crearArea: RequestHandler<
   {},
@@ -72,28 +71,11 @@ export const eliminarArea = async (
 ) => {
   try {
     const errores: string[] = [];
-    const { id } = req.body;
+    const { id } = req.params;
     const supervisor = req.user! as JwtPayload;
 
-    if (!supervisor) {
-      throw new AppError(
-        "Supervisor no autenticado",
-        401,
-        "Solo los supervisores autenticados pueden eliminar areas"
-      );
-    }
-    if (supervisor.rol != Rol.SUPERVISOR) {
-      throw new AppError(
-        "Error de autenticacion",
-        401,
-        "Solo los supervisores pueden eliminar areas"
-      );
-    }
-
-    if (!id) {
-      errores.push("Falta campo id de area a borrar");
-    }
     const area = await Area.findById(id);
+
     if (!area) {
       throw new AppError(
         "Error al borrar",
@@ -101,6 +83,7 @@ export const eliminarArea = async (
         "No se encontro area con el id especificado"
       );
     }
+
     if (area?.is_deleted) {
       errores.push("No puedes eliminar un area que ya se encuentra borrada");
     }
@@ -112,13 +95,42 @@ export const eliminarArea = async (
     area.is_deleted = true;
     await area.save();
 
-    return res
-      .status(200)
-      .json({
-        messsage: `Area ${area?.nombre} eliminada correctamente`,
-        area: AreaMapper.toDTO(area),
-      });
+    return res.status(200).json({
+      messsage: `Area ${area?.nombre} eliminada correctamente`,
+      area: AreaMapper.toDTO(area),
+    });
   } catch (error) {
     next(error);
   }
+};
+
+export const restaurarArea = async (
+  req: Request,
+  res: Response<AreaResponseData>,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+
+  const areaEncontrada = await Area.findById(id);
+
+  if (!areaEncontrada) {
+    throw new AppError(
+      "Area no encontrada",
+      404,
+      "No se encontro un area con el id especificado"
+    );
+  }
+  if (!areaEncontrada?.is_deleted) {
+    throw new AppError(
+      "Area activa",
+      400,
+      "No puedes restaurar un area activa"
+    );
+  }
+
+  areaEncontrada.is_deleted = false;
+
+  await areaEncontrada.save();
+
+  return res.status(200).json(AreaMapper.toDTO(areaEncontrada));
 };
