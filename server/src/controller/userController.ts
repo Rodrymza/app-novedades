@@ -3,7 +3,11 @@ import Usuario, { IUsuario } from "../model/usuario";
 import { UsuarioMapper } from "../mappers/usuario.mapper";
 import { AppError } from "../errors/appError";
 import { JwtPayload } from "../interfaces/jwt.interfaces";
-import { Rol, UserResponseData } from "../interfaces/user.interfaces";
+import {
+  Rol,
+  UserResponseData,
+  UserUpdateDTO,
+} from "../interfaces/user.interfaces";
 import { Types } from "mongoose";
 
 export const findAllUsers = async (
@@ -141,6 +145,76 @@ export const restaurarUsuario = async (
     await usuario.save();
 
     return res.status(200).json(UsuarioMapper.toDto(usuario));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const modificarPerfil = async (
+  req: Request<any, any, UserUpdateDTO>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const usuario = req.user;
+    const { apellido, nombre, email } = req.body;
+
+    if (!usuario) {
+      throw new AppError(
+        "Error de autenticacion",
+        401,
+        "Debes estar logueado para cambiar tus datos"
+      );
+    }
+
+    const hayDatosParaActualizar = nombre || apellido || email;
+
+    if (!hayDatosParaActualizar) {
+      throw new AppError(
+        "Sin datos",
+        400,
+        "Debes enviar al menos un dato (nombre, apellido o email) para actualizar."
+      );
+    }
+
+    const usuario_id = usuario.id;
+
+    const usuarioAModificar = await Usuario.findById(usuario_id);
+
+    if (!usuarioAModificar) {
+      throw new AppError(
+        "Error al buscar el usuario",
+        404,
+        "El id especificado no pertenece a ningun usuario"
+      );
+    }
+
+    if (usuarioAModificar.is_deleted) {
+      throw new AppError(
+        "Error en usuario encontrado",
+        400,
+        "No puedes modificar los datos de un usuario eliminado"
+      );
+    }
+
+    if (email && email !== usuarioAModificar.email) {
+      const emailExiste = await Usuario.exists({ email });
+      if (emailExiste) {
+        throw new AppError(
+          "Conflicto de datos",
+          409,
+          "El email ingresado ya está en uso por otro usuario."
+        );
+      }
+      usuarioAModificar.email = email;
+    }
+
+    if (nombre) usuarioAModificar.nombre = nombre;
+    if (apellido) usuarioAModificar.apellido = apellido;
+
+    await usuarioAModificar.save();
+
+    return res.status(200).json(UsuarioMapper.toDto(usuarioAModificar));
   } catch (error) {
     next(error);
   }
