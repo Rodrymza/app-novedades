@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import Usuario from "../model/usuario";
 import Area from "../model/area";
 import Novedad from "../model/novedad";
@@ -6,7 +6,6 @@ import { NovedadMapper } from "../mappers/novedad.mapper";
 import { FilterQuery } from "mongoose";
 import {
   CreateNovedad,
-  EliminarNovedad,
   FiltroNovedad,
   NovedadResponse,
   NovedadResponseData,
@@ -14,6 +13,7 @@ import {
 import { Rol } from "../interfaces/user.interfaces";
 import { AppError } from "../errors/appError";
 import { validarObjectId } from "../utils/validateObjectId";
+import { Types } from "mongoose";
 
 export const crearNovedad: RequestHandler<
   {},
@@ -199,15 +199,15 @@ export const filtrarNovedades: RequestHandler<
   }
 };
 
-export const eliminarNovedad: RequestHandler<
-  {},
-  NovedadResponseData,
-  EliminarNovedad,
-  {}
-> = async (req, res, next) => {
+export const eliminarNovedad = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const MENSAJE_ERROR = "Error de validación al eliminar la novedad";
   try {
-    const { novedad_id, motivo } = req.body;
+    const novedad_id = req.params.id;
+    const { motivo } = req.body;
     const usuario_id = req.user?.id;
     let erroresValidacion: string[] = [];
 
@@ -221,15 +221,6 @@ export const eliminarNovedad: RequestHandler<
     }
     validarObjectId(usuario_id!, "usuario_id");
     validarObjectId(novedad_id, "novedad_id");
-
-    const usuario = await Usuario.findById(usuario_id);
-    if (!usuario) {
-      throw new AppError(
-        "El usuario no existe",
-        404,
-        "No se encontro usuario con el id especificado"
-      );
-    }
 
     const novedad = await Novedad.findById(novedad_id);
 
@@ -248,33 +239,61 @@ export const eliminarNovedad: RequestHandler<
         "La novedad ya se encuentra eliminada"
       );
     }
-    const fecha = Date.now();
 
-    const novedadActualizada = await Novedad.findByIdAndUpdate(
-      novedad_id,
-      {
-        is_deleted: true,
-        audit_delete: {
-          fecha: fecha,
-          usuario_id: usuario?._id,
-          motivo: motivo,
-        },
-      },
-      { new: true }
-    )
-      .populate("usuario", "nombre apellido username")
-      .populate("area", "nombre")
-      .populate("audit_delete.usuario_id", "nombre apellido username");
+    novedad.is_deleted = true;
 
-    if (!novedadActualizada) {
+    novedad.audit_delete = {
+      fecha: new Date(),
+      usuario_id: new Types.ObjectId(usuario_id),
+      motivo: motivo,
+    };
+    await novedad.save();
+
+    await novedad.populate([
+      { path: "usuario", select: "nombre apellido username" },
+      { path: "area", select: "nombre" },
+      { path: "audit_delete.usuario_id", select: "nombre apellido username" },
+    ]);
+
+    const novedadRes = NovedadMapper.toDto(novedad);
+    return res.status(201).json(novedadRes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restaurarNovedad = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const novedadEncontrada = await Novedad.findById(id);
+
+    if (!novedadEncontrada) {
       throw new AppError(
-        "No se pudo realizar la eliminacion. Novedad no encontrada",
+        "Novedad no encontrada",
         404,
-        MENSAJE_ERROR
+        "No se encontro con la novedad especificada"
       );
     }
-    const novedadRes = NovedadMapper.toDto(novedadActualizada);
-    return res.status(201).json(novedadRes);
+
+    if (!novedadEncontrada.is_deleted) {
+      throw new AppError(
+        "Novedad activa",
+        400,
+        "No puede restaurarse una novedad activa"
+      );
+    }
+
+    novedadEncontrada.is_deleted = false;
+    novedadEncontrada.audit_delete = undefined;
+
+    await novedadEncontrada.save();
+
+    return res.status(200).json(NovedadMapper.toDto(novedadEncontrada));
   } catch (error) {
     next(error);
   }

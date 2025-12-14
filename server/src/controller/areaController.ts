@@ -5,6 +5,7 @@ import { AreaMapper } from "../mappers/area.mapper";
 import { FilterQuery } from "mongoose";
 import { AppError } from "../errors/appError";
 import { JwtPayload } from "../interfaces/jwt.interfaces";
+import { Rol } from "../interfaces/user.interfaces";
 
 export const crearArea: RequestHandler<
   {},
@@ -47,9 +48,10 @@ export const crearArea: RequestHandler<
 
 export const findallAreas: RequestHandler = async (req, res, next) => {
   try {
-    const { todas } = req.query;
+    const mostrarTodas = req.query.todas == "true";
+    const esSupervisor = req.user!.rol == Rol.SUPERVISOR;
     const filtro: FilterQuery<any> = {};
-    if (!todas) {
+    if (!mostrarTodas || !esSupervisor) {
       filtro.is_deleted = false;
     }
     const areas = await Area.find(filtro).sort({ nombre: 1 });
@@ -124,7 +126,7 @@ export const restaurarArea = async (
     throw new AppError(
       "Area activa",
       400,
-      "No puedes restaurar un area activa"
+      "No puede restaurarse un area activa"
     );
   }
 
