@@ -124,7 +124,7 @@ export const restaurarArea = async (
     throw new AppError(
       "Area activa",
       400,
-      "No puedes restaurar un area activa"
+      "No puede restaurarse un area activa"
     );
   }
 
