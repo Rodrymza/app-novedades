@@ -2,8 +2,10 @@ import { axiosClient } from "../api/axios";
 import type { AreaResponse, CreateArea } from "../types/area.interface";
 
 export const AreaService = {
-  getAllAreas: async (): Promise<AreaResponse[]> => {
-    const { data } = await axiosClient.get<AreaResponse[]>("/areas");
+  getAllAreas: async (todas: boolean): Promise<AreaResponse[]> => {
+    const { data } = await axiosClient.get<AreaResponse[]>(
+      `/areas${todas ? "?todas=true" : ""}`
+    );
     return data;
   },
 
@@ -13,8 +15,12 @@ export const AreaService = {
   },
 
   borrarArea: async (id: string) => {
-    const datosBorrar = { id: id };
-    const { data } = await axiosClient.put("/areas/eliminar", datosBorrar);
+    const { data } = await axiosClient.patch(`/areas/${id}/eliminar`, {});
+    return data;
+  },
+
+  restaurarArea: async (id: string) => {
+    const { data } = await axiosClient.patch(`/areas/${id}/restaurar`, {});
     return data;
   },
 };
