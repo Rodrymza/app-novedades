@@ -9,17 +9,24 @@ export const useAreas = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const traerAreas = useCallback(async () => {
+  // 1. ESTADO DE MEMORIA: Guardamos el último filtro aplicado
+  const [filtroActual, setFiltroActual] = useState(false);
+
+  // 2. MODIFICAMOS TRAER AREAS
+  const traerAreas = useCallback(async (todas: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
 
-      const data = await AreaService.getAllAreas();
+      // Guardamos la preferencia actual para usarla después
+      setFiltroActual(todas);
+
+      const data = await AreaService.getAllAreas(todas);
       if (data) {
         setAreas(data);
       }
     } catch (error) {
-      setError("No se pudieron cargar los usuarios.");
+      setError("No se pudieron cargar las áreas.");
     } finally {
       setLoading(false);
     }
@@ -36,13 +43,14 @@ export const useAreas = () => {
             error: (err) => getErrorMessage(err),
           }
         );
-        traerAreas();
+        // 3. USAMOS LA MEMORIA: Refrescamos usando el estado guardado
+        traerAreas(filtroActual);
         return resultado;
       } catch (error) {
         console.log(getErrorMessage(error));
       }
     },
-    [traerAreas]
+    [traerAreas, filtroActual] // Agregamos filtroActual a dependencias
   );
 
   const eliminarArea = useCallback(
@@ -53,12 +61,30 @@ export const useAreas = () => {
           success: "Area eliminada correctamente",
           error: (err) => getErrorMessage(err),
         });
-        traerAreas();
+        // 3. USAMOS LA MEMORIA
+        traerAreas(filtroActual);
       } catch (error) {
         console.log(getErrorMessage(error));
       }
     },
-    [traerAreas]
+    [traerAreas, filtroActual]
+  );
+
+  const restaurarArea = useCallback(
+    async (id: string) => {
+      try {
+        await toast.promise(AreaService.restaurarArea(id), {
+          loading: "Restaurando area",
+          success: "Area restaurada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        // 3. USAMOS LA MEMORIA
+        traerAreas(filtroActual);
+      } catch (error) {
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas, filtroActual]
   );
 
   return {
@@ -66,6 +92,7 @@ export const useAreas = () => {
     traerAreas,
     crearArea,
     eliminarArea,
+    restaurarArea,
     areas,
     loading,
   };
