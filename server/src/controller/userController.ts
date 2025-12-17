@@ -16,7 +16,10 @@ export const findAllUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users = await Usuario.find();
+    const users = await Usuario.find().populate({
+      path: "audit_delete.usuario_id",
+      select: "nombre apellido username",
+    });
     const usersDto = users.map(UsuarioMapper.toDto);
     res.status(200).json(usersDto);
   } catch (error) {}
