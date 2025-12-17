@@ -19,9 +19,16 @@ export const UserService = {
     return respuesta.data;
   },
   deleteUser: async (reqEliminar: IDeleteUser) => {
-    const respuesta = await axiosClient.put<UserResponse>(
-      "/usuarios/eliminar",
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${reqEliminar.id_usuario}/eliminar`,
       reqEliminar
+    );
+    return respuesta.data;
+  },
+  restoreUser: async (id_usuario: string) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id_usuario}/restaurar`,
+      {}
     );
     return respuesta.data;
   },
