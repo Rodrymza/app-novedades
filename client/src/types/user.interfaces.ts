@@ -17,6 +17,15 @@ export interface UserResponse {
   email: string;
   rol: "OPERADOR" | "SUPERVISOR";
   is_deleted: boolean;
+  audit_delete?: {
+    fecha: string;
+    usuario: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    };
+    motivo: string;
+  };
 }
 
 export type Rol = "SUPERVISOR" | "OPERADOR";
