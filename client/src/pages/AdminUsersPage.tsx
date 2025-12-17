@@ -5,11 +5,16 @@ import type { IDeleteUser } from "../types/user.interfaces";
 import toast from "react-hot-toast";
 import { TextInputModal } from "../components/layout/TextInputModal";
 import { Link } from "react-router-dom";
+import { ConfirmModal } from "../components/layout/ConfirmModal";
+import { useAuth } from "../context/AuthContext";
 
 const AdminUserPage = () => {
-  const { traerUsuarios, loading, usuarios, borrarUsuario } = useUsers();
+  const { traerUsuarios, loading, usuarios, borrarUsuario, restaurarUsuario } =
+    useUsers();
+  const { user: usuarioLogueado } = useAuth();
   const [textInputModal, setTextInputModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
+  const [userSelected, setUserSelected] = useState<string | null>(null);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     traerUsuarios();
@@ -20,7 +25,7 @@ const AdminUserPage = () => {
   }
   // funcion de borrar usuario
   const handleDeleteUser = async (id: string) => {
-    setUserToDelete(id);
+    setUserSelected(id);
     setTextInputModal(true);
   };
 
@@ -31,22 +36,35 @@ const AdminUserPage = () => {
     }
 
     const reqEliminado: IDeleteUser = {
-      id_usuario: userToDelete!,
+      id_usuario: userSelected!,
       motivo: textoMotivo,
     };
 
     await borrarUsuario(reqEliminado);
-    traerUsuarios();
-    setUserToDelete(null);
+    setUserSelected(null);
     setTextInputModal(false);
   };
 
   const handleEditUser = (id: string) => {
-    toast.success(`Proximo a desarrollar...\nId usuario a editar: ${id}`);
+    toast.success("Funcion proxima a desarrollar " + id);
   };
 
   const handleRecovery = (id: string) => {
-    toast.success(`Proximo a desarrollar..\n.Id usuario a recuperar: ${id}`);
+    setUserSelected(id);
+    setShowConfirm(true);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!userSelected) return;
+
+    try {
+      await restaurarUsuario(userSelected);
+    } catch (error) {
+      toast.error("No se pudo restaurar el usuario");
+    } finally {
+      setUserSelected(null);
+      setShowConfirm(false);
+    }
   };
 
   return (
@@ -101,6 +119,7 @@ const AdminUserPage = () => {
               usuarios.map((user) => (
                 <UserRow
                   key={user.id}
+                  esMismoUsuario={user.id == usuarioLogueado?.id}
                   user={user}
                   onDelete={handleDeleteUser}
                   onEdit={handleEditUser}
@@ -117,10 +136,17 @@ const AdminUserPage = () => {
         message="Ingrese motivo para eliminar usuario"
         placeholder="Motivo..."
         onCancel={() => {
-          setUserToDelete(null);
+          setUserSelected(null);
           setTextInputModal(false);
         }}
         onConfirm={handleConfirmDelete}
+      />
+      <ConfirmModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+        onConfirm={handleConfirmAction}
+        title={"Restaurar Usuario"}
+        message={"¿Desea Restaurar el usuario seleccionado?"}
       />
       ;
     </>
