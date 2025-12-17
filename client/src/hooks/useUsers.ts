@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import type { IDeleteUser, UserResponse } from "../types/user.interfaces";
 import { UserService } from "../services/user.service";
-import { AxiosError } from "axios";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../utils/getErrorMessage";
 
@@ -11,9 +10,12 @@ export const useUsers = () => {
   const [error, setError] = useState<string | null>(null);
   const [perfil, setPerfil] = useState<UserResponse | null>(null);
 
-  const traerUsuarios = useCallback(async () => {
+  const traerUsuarios = useCallback(async (background = false) => {
     try {
-      setLoading(true);
+      // Solo mostramos el spinner si NO es una carga en segundo plano
+      if (!background) {
+        setLoading(true);
+      }
       setError(null);
 
       const data = await UserService.getUsers();
@@ -23,7 +25,10 @@ export const useUsers = () => {
     } catch (error) {
       setError("No se pudieron cargar los usuarios.");
     } finally {
-      setLoading(false);
+      // Solo apagamos el spinner si lo habíamos encendido
+      if (!background) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -36,11 +41,9 @@ export const useUsers = () => {
       });
 
       // Si salió bien, recargamos la lista
-      traerUsuarios();
+      await traerUsuarios(true);
     } catch (error) {
       setError("No se pudo eliminar el usuario");
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -59,6 +62,20 @@ export const useUsers = () => {
     }
   }, []);
 
+  const restaurarUsuario = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      await toast.promise(UserService.restoreUser(id), {
+        loading: "Restaurando Usuario...",
+        success: "Usuario restaurado correctamente",
+        error: (err) => getErrorMessage(err),
+      });
+      traerUsuarios(true);
+    } catch (error) {
+      setError(`Error al restaurar el usuario: ${error}`);
+    }
+  }, []);
+
   return {
     error,
     traerUsuarios,
@@ -66,6 +83,7 @@ export const useUsers = () => {
     usuarios,
     loading,
     getPerfil,
+    restaurarUsuario,
     perfil,
   };
 };
