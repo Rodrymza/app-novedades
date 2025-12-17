@@ -148,7 +148,6 @@ const AdminUserPage = () => {
         title={"Restaurar Usuario"}
         message={"¿Desea Restaurar el usuario seleccionado?"}
       />
-      ;
     </>
   );
 };
