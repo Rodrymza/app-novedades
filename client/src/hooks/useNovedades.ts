@@ -90,6 +90,27 @@ export const useNovedades = () => {
     }
   }, []);
 
+  const restaurarNovedad = useCallback(async (id: string) => {
+    try {
+      await toast.promise(NovedadService.restaurarNovedad(id), {
+        loading: "Restaurando novedad...",
+        success: "Novedad restaurada exitosamente",
+        error: (err) => {
+          if (err instanceof AxiosError && err.response?.data) {
+            return (
+              err.response.data.detail ||
+              err.response.data.message ||
+              "Error al eliminar"
+            );
+          }
+          return "Ocurrió un error inesperado";
+        },
+      });
+    } catch (error) {
+      setError("No se pudo restaurar la novedad");
+    }
+  }, []);
+
   return {
     novedades,
     loading,
@@ -98,5 +119,6 @@ export const useNovedades = () => {
     crearNovedad,
     filtrarNovedades,
     eliminarNovedad,
+    restaurarNovedad,
   };
 };

@@ -1,82 +1,100 @@
 import { useEffect, useState } from "react";
 import { FaSearch, FaList, FaCheckCircle, FaTrash } from "react-icons/fa";
-import toast from "react-hot-toast";
 import type { FiltroNovedad } from "../types/novedad.interface";
 import { useNovedades } from "../hooks/useNovedades";
 import { NovedadCard } from "../components/novedad/NovedadCard";
 import { TextInputModal } from "../components/layout/TextInputModal";
 import { NovedadFilters } from "../components/novedad/NovedadFilters";
+import { ConfirmModal } from "../components/layout/ConfirmModal";
 
 // Definimos los tipos de pestañas disponibles
 type TabType = "TODAS" | "ACTIVAS" | "ELIMINADAS";
 
 const AdminNovedadesPage = () => {
-  const { novedades, loading, filtrarNovedades, eliminarNovedad } =
-    useNovedades();
+  const {
+    novedades,
+    loading,
+    filtrarNovedades,
+    eliminarNovedad,
+    restaurarNovedad,
+  } = useNovedades();
 
   const [currentTab, setCurrentTab] = useState<TabType>("TODAS");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Modales y Selección
   const [deleteInputModal, setDeleteInputModal] = useState<boolean>(false);
-  const [selectedIdToDelete, setselectedIdToDelete] = useState<string>("");
-  console.log(selectedIdToDelete);
+  const [showConfirmRestore, setShowConfirmRestore] = useState(false); // Modal de restauración
+  const [novedadSelected, setNovedadSelected] = useState<string>("");
+
+  // --- LÓGICA DE FILTROS ---
+  const obtenerFiltroPorTab = (tab: TabType): FiltroNovedad => {
+    switch (tab) {
+      case "ACTIVAS":
+        return { is_deleted: false };
+      case "ELIMINADAS":
+        return { is_deleted: true };
+      case "TODAS":
+      default:
+        return {};
+    }
+  };
 
   useEffect(() => {
-    let filtro: FiltroNovedad = {};
-
-    // Mapeamos la Pestaña -> Filtro Backend
-    switch (currentTab) {
-      case "ACTIVAS":
-        filtro = { is_deleted: false };
-        break;
-      case "ELIMINADAS":
-        filtro = { is_deleted: true };
-        break;
-      case "TODAS":
-        filtro = {};
-        break;
-    }
-
+    const filtro = obtenerFiltroPorTab(currentTab);
     filtrarNovedades(filtro);
   }, [currentTab, filtrarNovedades]);
 
-  // --- Filtrado Local por Texto (Opcional, para búsqueda rápida) ---
   const filteredList = novedades.filter(
     (n) =>
       n.contenido.toLowerCase().includes(searchTerm.toLowerCase()) ||
       n.usuario.apellido.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Manejador de Restauración (Conectado a tu lógica futura)
-  const handleRestore = async (id: string) => {
-    if (!confirm("¿Deseas restaurar esta novedad?")) return;
-    try {
-      // await restaurarNovedad(id);
-      toast.success(`Novedad ${id} restaurada`);
-      // Forzamos recarga simulando cambio de tab o llamando al effect
-      const filtro = currentTab === "TODAS" ? {} : { is_deleted: true };
-      await filtrarNovedades(filtro);
-    } catch (err) {
-      toast.error("Error al restaurar");
-    }
+  // --- HANDLERS PARA RESTAURAR (ConfirmModal) ---
+
+  // 1. Al hacer click en el botón "Restaurar" de la tarjeta
+  const handleRestoreClick = (id: string) => {
+    setNovedadSelected(id); // Guardamos ID
+    setShowConfirmRestore(true); // Abrimos modal
   };
 
-  const handleDelete = async (id: string) => {
-    setselectedIdToDelete(id);
+  // 2. Al confirmar en el Modal
+  const handleRestoreConfirm = async () => {
+    if (!novedadSelected) return;
+
+    await restaurarNovedad(novedadSelected);
+
+    // Recargamos lista
+    const filtro = obtenerFiltroPorTab(currentTab);
+    await filtrarNovedades(filtro);
+
+    setShowConfirmRestore(false); // Cerramos modal
+    setNovedadSelected(""); // Limpiamos selección
+  };
+
+  // --- HANDLERS PARA ELIMINAR (TextInputModal) ---
+
+  // 1. Al hacer click en el botón "Eliminar" de la tarjeta
+  const handleDeleteClick = (id: string) => {
+    setNovedadSelected(id);
     setDeleteInputModal(true);
   };
 
+  // 2. Al confirmar con texto
   const handleDeleteConfirm = async (textoMotivo: string) => {
-    await eliminarNovedad(selectedIdToDelete, textoMotivo);
-    const filtro = currentTab === "TODAS" ? {} : { is_deleted: true };
+    await eliminarNovedad(novedadSelected, textoMotivo);
+    const filtro = obtenerFiltroPorTab(currentTab);
     await filtrarNovedades(filtro);
     setDeleteInputModal(false);
+    setNovedadSelected("");
   };
 
+  // --- FILTROS UI ---
   const handleFilterSubmit = (filtrosRecibidos: FiltroNovedad) => {
     filtrarNovedades(filtrosRecibidos);
   };
 
-  // al limpiar los filtros se traen todas las novedades de nuevo
   const handleFilterReset = () => {
     filtrarNovedades({});
   };
@@ -109,6 +127,7 @@ const AdminNovedadesPage = () => {
               />
             </div>
           </div>
+
           <div className="w-full sm:w-auto mb-4">
             <NovedadFilters
               onFilterSubmit={handleFilterSubmit}
@@ -117,7 +136,7 @@ const AdminNovedadesPage = () => {
             />
           </div>
 
-          {/* --- SISTEMA DE PESTAÑAS (TABS) --- */}
+          {/* --- TABS --- */}
           <div className="flex space-x-1 bg-white p-1 rounded-xl border border-gray-200 mb-4 w-fit shadow-sm">
             <TabButton
               active={currentTab === "TODAS"}
@@ -152,9 +171,9 @@ const AdminNovedadesPage = () => {
                   <NovedadCard
                     key={nov.id}
                     novedad={nov}
-                    // Si está borrada, le pasamos la función. Si no, undefined.
-                    onRestore={nov.is_deleted ? handleRestore : undefined}
-                    onDelete={nov.is_deleted ? undefined : handleDelete}
+                    // IMPORTANTE: Pasamos los handlers de Click, no los de Confirm
+                    onRestore={nov.is_deleted ? handleRestoreClick : undefined}
+                    onDelete={nov.is_deleted ? undefined : handleDeleteClick}
                   />
                 ))}
               </div>
@@ -163,22 +182,34 @@ const AdminNovedadesPage = () => {
         </div>
       </div>
 
+      {/* MODAL PARA ELIMINAR (Con Input) */}
       <TextInputModal
         title="Eliminar Novedad"
         message="Ingrese motivo para borrar la novedad"
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
-          setselectedIdToDelete("");
+          setNovedadSelected("");
           setDeleteInputModal(false);
         }}
         placeholder="Ej. Error de tipado"
         open={deleteInputModal}
       />
+
+      {/* MODAL PARA RESTAURAR (Simple) */}
+      <ConfirmModal
+        open={showConfirmRestore}
+        onClose={() => {
+          setShowConfirmRestore(false);
+          setNovedadSelected("");
+        }}
+        onConfirm={handleRestoreConfirm}
+        title="Restaurar Novedad"
+        message="¿Deseas restaurar esta novedad? Volverá a estar visible en el listado activo inmediatamente."
+      />
     </>
   );
 };
 
-// Componente pequeño para el botón del Tab
 const TabButton = ({ active, onClick, icon, label }: any) => (
   <button
     onClick={onClick}
