@@ -16,7 +16,10 @@ export const findAllUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users = await Usuario.find();
+    const users = await Usuario.find().populate({
+      path: "audit_delete.usuario_id",
+      select: "nombre apellido username",
+    });
     const usersDto = users.map(UsuarioMapper.toDto);
     res.status(200).json(usersDto);
   } catch (error) {}
@@ -43,7 +46,8 @@ export const eliminarUsuario = async (
 ) => {
   try {
     const supervisor = req.user! as JwtPayload;
-    const { id_usuario, motivo } = req.body;
+    const { id } = req.params;
+    const { motivo } = req.body;
     let errores: string[] = [];
     if (!supervisor) {
       throw new AppError(
@@ -53,7 +57,7 @@ export const eliminarUsuario = async (
       );
     }
 
-    if (!id_usuario) {
+    if (!id) {
       errores.push("El ID del usuario a eliminar es obligatorio.");
     }
     if (!motivo) {
@@ -66,7 +70,7 @@ export const eliminarUsuario = async (
         `Errores de validacion: ${errores.join(", ")}`
       );
     }
-    if (id_usuario === supervisor.id) {
+    if (id === supervisor.id) {
       throw new AppError(
         "Acción no permitida",
         403,
@@ -74,7 +78,7 @@ export const eliminarUsuario = async (
       );
     }
 
-    const usuario = await Usuario.findById(id_usuario);
+    const usuario = await Usuario.findById(id);
 
     if (!usuario) {
       throw new AppError(
@@ -105,7 +109,7 @@ export const restaurarUsuario = async (
   next: NextFunction
 ) => {
   try {
-    const { id } = req.body;
+    const { id } = req.params;
     const user = req.user;
     if (!user) {
       throw new AppError(
