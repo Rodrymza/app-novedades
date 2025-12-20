@@ -1,6 +1,7 @@
 import { axiosClient } from "../api/axios";
 import type {
   IDeleteUser,
+  IEditUser,
   UserList,
   UserResponse,
 } from "../types/user.interfaces";
@@ -29,6 +30,13 @@ export const UserService = {
     const respuesta = await axiosClient.patch<UserResponse>(
       `/usuarios/${id_usuario}/restaurar`,
       {}
+    );
+    return respuesta.data;
+  },
+  editUser: async (id: string, data: IEditUser) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id}/modificar`,
+      data
     );
     return respuesta.data;
   },
