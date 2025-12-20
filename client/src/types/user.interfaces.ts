@@ -44,4 +44,10 @@ export interface IDeleteUser {
   motivo: string;
   id_usuario: string;
 }
+
+export interface IEditUser {
+  apellido: string;
+  nombre: string;
+  email: string;
+}
 export type UserResponseData = UserResponse | ErrorResponse;

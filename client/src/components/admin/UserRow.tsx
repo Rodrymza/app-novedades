@@ -11,14 +11,13 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { MdRestore } from "react-icons/md";
-import toast from "react-hot-toast";
 import type { UserResponse } from "../../types/user.interfaces";
 
 interface Props {
   user: UserResponse;
   esMismoUsuario: boolean;
   onDelete: (id: string) => void;
-  onEdit: (id: string) => void;
+  onEdit: (user: UserResponse) => void;
   onRecovery: (id: string) => void;
 }
 
@@ -126,21 +125,33 @@ export const UserRow = ({
             <button
               onClick={() => onRecovery(user.id)}
               className="text-orange-600 hover:text-orange-800 transition"
+              title={`Restaurar usuario ${user.username}`}
             >
               <MdRestore className="w-5 h-5" />
             </button>
           ) : (
-            <button
-              onClick={() => onDelete(user.id)}
-              disabled={esMismoUsuario}
-              className={`ml-2 ${
-                esMismoUsuario
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-red-600 hover:text-red-800"
-              }`}
-            >
-              <FaTrash className="w-4 h-4" />
-            </button>
+            <>
+              <button
+                onClick={() => onEdit(user)}
+                className={`ml-4 text-indigo-600 hover:text-indigo-800 transition-colors"
+                }`}
+                title={`Editar usuario ${user.username}`}
+              >
+                <FaEdit className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => onDelete(user.id)}
+                disabled={esMismoUsuario}
+                title={`Eliminar usuario ${user.username}`}
+                className={`ml-4 ${
+                  esMismoUsuario
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-red-600 hover:text-red-800"
+                }`}
+              >
+                <FaTrash className="w-4 h-4" />
+              </button>
+            </>
           )}
           {/* Nota: He simplificado los botones para enfocarme en el expandible */}
         </td>

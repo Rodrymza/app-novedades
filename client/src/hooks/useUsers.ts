@@ -1,5 +1,9 @@
 import { useCallback, useState } from "react";
-import type { IDeleteUser, UserResponse } from "../types/user.interfaces";
+import type {
+  IDeleteUser,
+  IEditUser,
+  UserResponse,
+} from "../types/user.interfaces";
 import { UserService } from "../services/user.service";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../utils/getErrorMessage";
@@ -76,6 +80,25 @@ export const useUsers = () => {
     }
   }, []);
 
+  const modificarUsuario = useCallback(
+    async (id: string, editDataUser: IEditUser): Promise<boolean> => {
+      setError(null);
+      try {
+        await toast.promise(UserService.editUser(id, editDataUser), {
+          loading: "Editando informacion del usuario...",
+          success: "Informacion de usuario editada satisfactoriamente",
+          error: (err) => getErrorMessage(err),
+        });
+        traerUsuarios(true);
+        return true;
+      } catch (error) {
+        setError(`Error al editar el usuario ${error}`);
+        return false;
+      }
+    },
+    []
+  );
+
   return {
     error,
     traerUsuarios,
@@ -84,6 +107,7 @@ export const useUsers = () => {
     loading,
     getPerfil,
     restaurarUsuario,
+    modificarUsuario,
     perfil,
   };
 };

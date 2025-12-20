@@ -9,6 +9,7 @@ import {
   UserUpdateDTO,
 } from "../interfaces/user.interfaces";
 import { Types } from "mongoose";
+import { validarYFormatearDatos } from "../utils/user.validators";
 
 export const findAllUsers = async (
   req: Request,
@@ -155,54 +156,45 @@ export const restaurarUsuario = async (
 };
 
 export const modificarPerfil = async (
-  req: Request<any, any, UserUpdateDTO>,
+  req: Request<{ id: string }, any, UserUpdateDTO>,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const usuario = req.user;
-    const { apellido, nombre, email } = req.body;
+    const { id } = req.params;
 
-    if (!usuario) {
-      throw new AppError(
-        "Error de autenticacion",
-        401,
-        "Debes estar logueado para cambiar tus datos"
-      );
-    }
-
-    const hayDatosParaActualizar = nombre || apellido || email;
-
-    if (!hayDatosParaActualizar) {
+    if (Object.keys(req.body).length === 0) {
       throw new AppError(
         "Sin datos",
         400,
-        "Debes enviar al menos un dato (nombre, apellido o email) para actualizar."
+        "No se enviaron datos para actualizar."
       );
     }
 
-    const usuario_id = usuario.id;
-
-    const usuarioAModificar = await Usuario.findById(usuario_id);
+    // 2. BUSQUEDA INICIAL
+    const usuarioAModificar = await Usuario.findById(id);
 
     if (!usuarioAModificar) {
-      throw new AppError(
-        "Error al buscar el usuario",
-        404,
-        "El id especificado no pertenece a ningun usuario"
-      );
+      throw new AppError("Usuario no encontrado", 404, "El ID no existe.");
     }
 
     if (usuarioAModificar.is_deleted) {
       throw new AppError(
-        "Error en usuario encontrado",
+        "Acción denegada",
         400,
-        "No puedes modificar los datos de un usuario eliminado"
+        "No se puede editar un usuario eliminado."
       );
     }
 
-    if (email && email !== usuarioAModificar.email) {
-      const emailExiste = await Usuario.exists({ email });
+    // 3. VALIDACIÓN DE FORMATO Y LIMPIEZA (Aquí usamos la nueva función)
+    // Esto nos devuelve un objeto limpio: { nombre: "Juan", apellido: "Perez", email: "..." }
+    // Si algo falla, la función lanza el AppError automáticamente y salta al catch.
+    const datosLimpios = validarYFormatearDatos(req.body);
+
+    // 4. VALIDACIÓN DE NEGOCIO (Base de Datos)
+    // Verificamos duplicidad de email SOLO si el email venía en el body y es diferente al actual
+    if (datosLimpios.email && datosLimpios.email !== usuarioAModificar.email) {
+      const emailExiste = await Usuario.exists({ email: datosLimpios.email });
       if (emailExiste) {
         throw new AppError(
           "Conflicto de datos",
@@ -210,11 +202,13 @@ export const modificarPerfil = async (
           "El email ingresado ya está en uso por otro usuario."
         );
       }
-      usuarioAModificar.email = email;
+      usuarioAModificar.email = datosLimpios.email;
     }
 
-    if (nombre) usuarioAModificar.nombre = nombre;
-    if (apellido) usuarioAModificar.apellido = apellido;
+    // 5. ASIGNACIÓN Y GUARDADO
+    if (datosLimpios.nombre) usuarioAModificar.nombre = datosLimpios.nombre;
+    if (datosLimpios.apellido)
+      usuarioAModificar.apellido = datosLimpios.apellido;
 
     await usuarioAModificar.save();
 

@@ -1,20 +1,29 @@
 import { useEffect, useState } from "react";
 import { useUsers } from "../hooks/useUsers";
 import { UserRow } from "../components/admin/UserRow";
-import type { IDeleteUser } from "../types/user.interfaces";
+import type { IDeleteUser, UserResponse } from "../types/user.interfaces";
 import toast from "react-hot-toast";
 import { TextInputModal } from "../components/layout/TextInputModal";
 import { Link } from "react-router-dom";
 import { ConfirmModal } from "../components/layout/ConfirmModal";
 import { useAuth } from "../context/AuthContext";
+import { UserEditModal } from "../components/layout/UserEditModal";
 
 const AdminUserPage = () => {
-  const { traerUsuarios, loading, usuarios, borrarUsuario, restaurarUsuario } =
-    useUsers();
+  const {
+    traerUsuarios,
+    loading,
+    usuarios,
+    borrarUsuario,
+    restaurarUsuario,
+    modificarUsuario,
+  } = useUsers();
   const { user: usuarioLogueado } = useAuth();
   const [textInputModal, setTextInputModal] = useState(false);
   const [userSelected, setUserSelected] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<UserResponse | null>(null);
 
   useEffect(() => {
     traerUsuarios();
@@ -27,6 +36,11 @@ const AdminUserPage = () => {
   const handleDeleteUser = async (id: string) => {
     setUserSelected(id);
     setTextInputModal(true);
+  };
+
+  const handleEditClick = async (user: UserResponse) => {
+    setUserToEdit(user);
+    setEditModalOpen(true);
   };
 
   const handleConfirmDelete = async (textoMotivo: string) => {
@@ -45,8 +59,20 @@ const AdminUserPage = () => {
     setTextInputModal(false);
   };
 
-  const handleEditUser = (id: string) => {
-    toast.success("Funcion proxima a desarrollar " + id);
+  const handleEditUser = async (dataDelFormulario: any) => {
+    if (!userToEdit) {
+      toast.error("No hay usuario seleccionado");
+      return;
+    }
+
+    const exito = await modificarUsuario(userToEdit.id, dataDelFormulario);
+
+    if (exito) {
+      setTimeout(() => {
+        setEditModalOpen(false);
+        setUserToEdit(null);
+      }, 1500);
+    }
   };
 
   const handleRecovery = (id: string) => {
@@ -122,7 +148,7 @@ const AdminUserPage = () => {
                   esMismoUsuario={user.id == usuarioLogueado?.id}
                   user={user}
                   onDelete={handleDeleteUser}
-                  onEdit={handleEditUser}
+                  onEdit={handleEditClick}
                   onRecovery={handleRecovery}
                 />
               ))
@@ -147,6 +173,14 @@ const AdminUserPage = () => {
         onConfirm={handleConfirmAction}
         title={"Restaurar Usuario"}
         message={"¿Desea Restaurar el usuario seleccionado?"}
+      />
+      {/* Modal de Edición */}
+      <UserEditModal
+        open={editModalOpen}
+        user={userToEdit}
+        onClose={() => setEditModalOpen(false)}
+        onConfirm={handleEditUser}
+        // loading={loadingEdit} (opcional si lo manejas en el hook)
       />
     </>
   );
