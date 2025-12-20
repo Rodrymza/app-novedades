@@ -19,6 +19,6 @@ userRoutes.patch(
   esSupervisor,
   restaurarUsuario
 );
-userRoutes.put("/modificar", validarToken, modificarPerfil);
+userRoutes.patch("/:id/modificar", validarToken, esSupervisor, modificarPerfil);
 
 export default userRoutes;
