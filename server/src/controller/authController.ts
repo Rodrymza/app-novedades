@@ -18,18 +18,19 @@ export const crearUsuario: RequestHandler<
   {} // 4to Genérico: Query
 > = async (req, res, next) => {
   try {
-    const { apellido, nombre, username, email, password, rol } = req.body;
+    const { apellido, nombre, username, email, password, documento, rol } =
+      req.body;
 
     // verificacion de usuario existente
     const userExists = await Usuario.findOne({
-      $or: [{ email }, { username }],
+      $or: [{ email }, { username }, { documento }],
     });
 
     if (userExists) {
       const message =
         userExists.email === email
           ? `El email '${email}' ya está registrado`
-          : `El nombre de usuario '${username}' ya está en uso`;
+          : `El nombre de usuario '${username}' o documento '${documento} ya está en uso`;
 
       throw new AppError("Error de validacion", 400, message);
     }
@@ -40,6 +41,7 @@ export const crearUsuario: RequestHandler<
       nombre,
       username,
       email,
+      documento,
       password: hashedPassword,
       rol: rol || "OPERADOR",
     });

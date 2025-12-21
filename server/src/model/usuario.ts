@@ -7,6 +7,7 @@ export interface IUsuario {
   nombre: string;
   username: string;
   email: string;
+  documento: string;
   password: string;
   rol: Rol;
   is_deleted: boolean;
@@ -47,6 +48,12 @@ const userShema = new Schema<IUsuario>(
       unique: true,
       lowercase: true,
       trim: true,
+    },
+    documento: {
+      type: String,
+      required: true,
+      trim: true,
+      length: 8,
     },
     password: {
       type: String,
