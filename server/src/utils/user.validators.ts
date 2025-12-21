@@ -69,19 +69,26 @@ export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
         "El formato del correo electrónico no es válido."
       );
     }
-
-    if (documento !== undefined) {
-      const documentoTrim = documento.trim();
-      if (!documentoRegex.test(documentoTrim)) {
-        throw new AppError(
-          "Error en documento",
-          400,
-          "El documento debe contener exactamente 8 dígitos numéricos."
-        );
-      }
-      datosFormateados.documento = documentoTrim;
-    }
     datosFormateados.email = emailTrim;
+  }
+  // --- VALIDACIÓNd DE DOCUMENTO ---
+  if (documento !== undefined) {
+    const docTrim = documento.toString().trim(); // Aseguramos string
+    if (docTrim.length < 7 || docTrim.length > 12) {
+      throw new AppError(
+        "Error en documento",
+        400,
+        "El documento debe tener entre 7 y 12 dígitos."
+      );
+    }
+    if (!documentoRegex.test(docTrim)) {
+      throw new AppError(
+        "Error en documento",
+        400,
+        "El documento solo debe contener números."
+      );
+    }
+    datosFormateados.documento = docTrim;
   }
 
   return datosFormateados;
