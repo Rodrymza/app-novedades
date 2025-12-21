@@ -17,6 +17,7 @@ const AdminUserPage = () => {
     borrarUsuario,
     restaurarUsuario,
     modificarUsuario,
+    restablecerContrasenia,
   } = useUsers();
   const { user: usuarioLogueado } = useAuth();
   const [textInputModal, setTextInputModal] = useState(false);
@@ -180,6 +181,7 @@ const AdminUserPage = () => {
         user={userToEdit}
         onClose={() => setEditModalOpen(false)}
         onConfirm={handleEditUser}
+        restorePassword={restablecerContrasenia}
         // loading={loadingEdit} (opcional si lo manejas en el hook)
       />
     </>
