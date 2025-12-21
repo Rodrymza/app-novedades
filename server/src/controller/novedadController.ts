@@ -105,10 +105,12 @@ export const crearNovedad: RequestHandler<
 
 export const findAllNovedades: RequestHandler = async (req, res, next) => {
   try {
+    const LIMIT = 400;
     const novedades = await Novedad.find({ is_deleted: false })
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(LIMIT);
 
     const novedadesFormateadas = novedades.map((novedad) => {
       return NovedadMapper.toDto(novedad);
@@ -126,6 +128,7 @@ export const filtrarNovedades: RequestHandler<
   {}
 > = async (req, res, next) => {
   try {
+    const LIMIT = 200;
     const {
       usuario_id,
       area_id,
@@ -188,7 +191,8 @@ export const filtrarNovedades: RequestHandler<
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
       .populate("audit_delete.usuario_id", "apellido nombre username")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(LIMIT);
 
     const respuesta: NovedadResponse[] = novedades.map((novedad) => {
       return NovedadMapper.toDto(novedad);
