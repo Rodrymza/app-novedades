@@ -13,9 +13,10 @@ const toTitleCase = (str: string): string => {
 // Regex para solo letras y espacios (permite tildes y ñ)
 const nameRegex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const documentoRegex = /^\d{8}$/;
 
 export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
-  const { nombre, apellido, email } = data;
+  const { nombre, apellido, email, documento } = data;
   const datosFormateados: Partial<UserUpdateDTO> = {};
 
   // --- VALIDACIÓN DE NOMBRE ---
@@ -67,6 +68,18 @@ export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
         400,
         "El formato del correo electrónico no es válido."
       );
+    }
+
+    if (documento !== undefined) {
+      const documentoTrim = documento.trim();
+      if (!documentoRegex.test(documentoTrim)) {
+        throw new AppError(
+          "Error en documento",
+          400,
+          "El documento debe contener exactamente 8 dígitos numéricos."
+        );
+      }
+      datosFormateados.documento = documentoTrim;
     }
     datosFormateados.email = emailTrim;
   }
