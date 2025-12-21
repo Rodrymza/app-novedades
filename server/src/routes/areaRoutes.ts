@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  actualizarArea,
   crearArea,
   eliminarArea,
   findallAreas,
@@ -11,7 +12,9 @@ import { validarIdMongo } from "../middlewares/validaciones.middleware";
 const areaRoutes = Router();
 
 areaRoutes.get("/", validarToken, findallAreas);
+
 areaRoutes.post("/", validarToken, esSupervisor, crearArea);
+
 areaRoutes.patch(
   "/:id/eliminar",
   validarToken,
@@ -26,5 +29,7 @@ areaRoutes.patch(
   validarIdMongo,
   restaurarArea
 );
+
+areaRoutes.patch("/:id/actualizar", validarToken, esSupervisor, actualizarArea);
 
 export default areaRoutes;
