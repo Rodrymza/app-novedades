@@ -9,6 +9,7 @@ import novedadRoutes from "./routes/novedadRoutes";
 import areaRoutes from "./routes/areaRoutes";
 import userRoutes from "./routes/userRoutes";
 import { AppError } from "./errors/appError";
+import { crearSupervisorPorDefecto } from "./utils/initialSetup";
 dotenv.config();
 
 const app = express();
@@ -49,6 +50,7 @@ app.use(errorHandler);
   try {
     await connectDB();
     console.log("📦 Base de datos conectada");
+    await crearSupervisorPorDefecto();
     app.listen(PORT, () => {
       console.log(`Servidor corriendo en el puerto ${PORT}`);
     });
