@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useUsers } from "../hooks/useUsers";
 import { UserRow } from "../components/admin/UserRow";
+// IMPORTAMOS LA CARD
+import { UserCard } from "../components/admin/UserCard";
 import type { IDeleteUser, UserResponse } from "../types/user.interfaces";
 import toast from "react-hot-toast";
 import { TextInputModal } from "../components/layout/TextInputModal";
@@ -10,6 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { UserEditModal } from "../components/layout/UserEditModal";
 
 const AdminUserPage = () => {
+  // ... (Toda tu lógica de hooks y handlers queda IGUAL, no la toques) ...
   const {
     traerUsuarios,
     loading,
@@ -30,10 +33,7 @@ const AdminUserPage = () => {
     traerUsuarios();
   }, []);
 
-  if (loading) {
-    return <div className="p-8 text-center">Cargando usuarios...</div>;
-  }
-  // funcion de borrar usuario
+  // ... (Tus handlers: handleDeleteUser, handleEditClick, etc. siguen aquí) ...
   const handleDeleteUser = async (id: string) => {
     setUserSelected(id);
     setTextInputModal(true);
@@ -49,12 +49,10 @@ const AdminUserPage = () => {
       toast.error("Debes ingresar un motivo");
       return;
     }
-
     const reqEliminado: IDeleteUser = {
       id_usuario: userSelected!,
       motivo: textoMotivo,
     };
-
     await borrarUsuario(reqEliminado);
     setUserSelected(null);
     setTextInputModal(false);
@@ -65,9 +63,7 @@ const AdminUserPage = () => {
       toast.error("No hay usuario seleccionado");
       return;
     }
-
     const exito = await modificarUsuario(userToEdit.id, dataDelFormulario);
-
     if (exito) {
       setTimeout(() => {
         setEditModalOpen(false);
@@ -83,7 +79,6 @@ const AdminUserPage = () => {
 
   const handleConfirmAction = async () => {
     if (!userSelected) return;
-
     try {
       await restaurarUsuario(userSelected);
     } catch (error) {
@@ -94,6 +89,10 @@ const AdminUserPage = () => {
     }
   };
 
+  if (loading) {
+    return <div className="p-8 text-center">Cargando usuarios...</div>;
+  }
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
@@ -101,13 +100,15 @@ const AdminUserPage = () => {
           Usuarios Registrados
         </h1>
         <Link
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white text-center px-4 py-2 rounded hover:bg-blue-700 transition"
           to="/admin/registrar-usuario"
         >
           + Nuevo Usuario
         </Link>
       </div>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+
+      {/* --- VISTA DESKTOP (TABLA) --- */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -123,7 +124,6 @@ const AdminUserPage = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Rol
               </th>
-              {/* Nueva cabecera Estado */}
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Estado
               </th>
@@ -157,6 +157,28 @@ const AdminUserPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* --- VISTA MÓVIL (CARDS) --- */}
+      <div className="md:hidden flex flex-col gap-4">
+        {usuarios.length === 0 ? (
+          <div className="text-center py-10 text-gray-500">
+            No se encontraron usuarios.
+          </div>
+        ) : (
+          usuarios.map((user) => (
+            <UserCard
+              key={user.id}
+              esMismoUsuario={user.id == usuarioLogueado?.id}
+              user={user}
+              onDelete={handleDeleteUser}
+              onEdit={handleEditClick}
+              onRecovery={handleRecovery}
+            />
+          ))
+        )}
+      </div>
+
+      {/* --- MODALES (Fuera de las vistas para no duplicar) --- */}
       <TextInputModal
         open={textInputModal}
         title="Eliminar usuario"
@@ -168,6 +190,7 @@ const AdminUserPage = () => {
         }}
         onConfirm={handleConfirmDelete}
       />
+
       <ConfirmModal
         open={showConfirm}
         onClose={() => setShowConfirm(false)}
@@ -175,14 +198,13 @@ const AdminUserPage = () => {
         title={"Restaurar Usuario"}
         message={"¿Desea Restaurar el usuario seleccionado?"}
       />
-      {/* Modal de Edición */}
+
       <UserEditModal
         open={editModalOpen}
         user={userToEdit}
         onClose={() => setEditModalOpen(false)}
         onConfirm={handleEditUser}
         restorePassword={restablecerContrasenia}
-        // loading={loadingEdit} (opcional si lo manejas en el hook)
       />
     </>
   );
