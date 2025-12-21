@@ -5,7 +5,8 @@ import {
   FaTimes,
   FaSave,
   FaKey,
-  FaIdCard, // Cambié FaPassport por FaIdCard que es más común para DNI
+  FaIdCard,
+  FaUserTag, // Cambié FaPassport por FaIdCard que es más común para DNI
 } from "react-icons/fa";
 import type { IEditUser, UserResponse } from "../../types/user.interfaces";
 // IMPORTANTE: Asegúrate de importar tu ConfirmModal
@@ -34,6 +35,7 @@ export const UserEditModal = ({
     apellido: "",
     email: "",
     documento: "",
+    rol: "",
   });
 
   // Estado para controlar el Modal de Confirmación de Contraseña
@@ -46,6 +48,7 @@ export const UserEditModal = ({
         apellido: user.apellido,
         email: user.email,
         documento: user.documento || "",
+        rol: user.rol,
       });
     }
   }, [user, open]);
@@ -151,6 +154,36 @@ export const UserEditModal = ({
                 }
                 className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition"
               />
+            </div>
+
+            {/* --- SELECTOR DE ROL --- */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <FaUserTag className="text-gray-400 size-3" /> Rol del Usuario
+              </label>
+              <div className="relative">
+                <select
+                  required
+                  value={formData.rol}
+                  onChange={(e) =>
+                    setFormData({ ...formData, rol: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition appearance-none bg-white"
+                >
+                  <option value="OPERADOR">Operador</option>
+                  <option value="SUPERVISOR">Supervisor</option>
+                </select>
+                {/* Flechita personalizada para el select (opcional, para que se vea mejor) */}
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <svg
+                    className="fill-current h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                  </svg>
+                </div>
+              </div>
             </div>
 
             {/* SECCIÓN RESET PASSWORD */}
