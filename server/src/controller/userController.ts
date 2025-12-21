@@ -229,6 +229,7 @@ export const modificarPerfil = async (
     if (datosLimpios.nombre) usuarioAModificar.nombre = datosLimpios.nombre;
     if (datosLimpios.apellido)
       usuarioAModificar.apellido = datosLimpios.apellido;
+    if (datosLimpios.rol) usuarioAModificar.rol = datosLimpios.rol as Rol;
 
     await usuarioAModificar.save();
 

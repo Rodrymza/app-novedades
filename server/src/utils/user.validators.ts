@@ -71,7 +71,7 @@ export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
     }
     datosFormateados.email = emailTrim;
   }
-  // --- VALIDACIÓNd DE DOCUMENTO ---
+  // --- VALIDACIÓN DE DOCUMENTO ---
   if (documento !== undefined) {
     const docTrim = documento.toString().trim(); // Aseguramos string
     if (docTrim.length < 7 || docTrim.length > 12) {
@@ -89,6 +89,18 @@ export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
       );
     }
     datosFormateados.documento = docTrim;
+  }
+  // --- VALIDACIÓNd DE ROL ---
+  if (data.rol != undefined) {
+    const rolTrim = data.rol.trim().toUpperCase();
+    if (rolTrim !== "OPERADOR" && rolTrim !== "SUPERVISOR") {
+      throw new AppError(
+        "Error en rol",
+        400,
+        "El rol debe ser OPERADOR o SUPERVISOR."
+      );
+    }
+    datosFormateados.rol = rolTrim;
   }
 
   return datosFormateados;

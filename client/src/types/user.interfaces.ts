@@ -52,5 +52,6 @@ export interface IEditUser {
   nombre: string;
   email: string;
   documento: string;
+  rol: string;
 }
 export type UserResponseData = UserResponse | ErrorResponse;

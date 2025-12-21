@@ -41,6 +41,7 @@ export interface UserUpdateDTO {
   nombre?: string;
   email?: string;
   documento?: string;
+  rol?: string;
 }
 
 export interface LoginUser {
