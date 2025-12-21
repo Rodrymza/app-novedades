@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import {
-  FaPlus,
-  FaMapMarkedAlt,
-  FaTrashAlt,
-  FaUndo,
-  FaEdit,
-} from "react-icons/fa";
-import type { AreaResponse, CreateArea } from "../types/area.interface"; // Asegúrate de importar Area
+import { FaPlus, FaMapMarkedAlt } from "react-icons/fa";
+import type { AreaResponse, CreateArea } from "../types/area.interface";
 import { useAreas } from "../hooks/useAreas";
 import toast from "react-hot-toast";
 import { ConfirmModal } from "../components/layout/ConfirmModal";
 import { AreaModal } from "../components/admin/areaModal";
+// IMPORTAMOS LOS NUEVOS COMPONENTES
+import { AreaRow } from "../components/admin/AreaRow";
+import { AreaCard } from "../components/admin/AreaCard";
 
 type ActionType = "delete" | "restore" | null;
 
@@ -22,7 +19,6 @@ const AdminAreasPage = () => {
   const [idSelected, setIdSelected] = useState<string | null>(null);
   const [actionType, setActionType] = useState<ActionType>(null);
 
-  // --- HOOK ---
   const {
     areas,
     loading,
@@ -34,45 +30,38 @@ const AdminAreasPage = () => {
     restaurarArea,
   } = useAreas();
 
-  // --- EFFECT ---
   useEffect(() => {
     traerAreas(verEliminadas);
   }, [verEliminadas]);
 
-  // --- HANDLERS MODAL ÁREA (CREAR / EDITAR) ---
-
+  // --- HANDLERS MODAL ÁREA ---
   const handleOpenCreate = () => {
-    setSelectedArea(null); // Null indica creación
+    setSelectedArea(null);
     setShowAreaModal(true);
   };
 
   const handleOpenEdit = (area: AreaResponse) => {
-    setSelectedArea(area); // Objeto indica edición
+    setSelectedArea(area);
     setShowAreaModal(true);
   };
 
   const handleAreaModalConfirm = async (data: CreateArea) => {
     try {
       if (selectedArea) {
-        // Modo EDICIÓN
         await actualizarArea(selectedArea.id, data);
         toast.success("Área actualizada correctamente");
       } else {
-        // Modo CREACIÓN
         await crearArea(data);
         toast.success("Área creada correctamente");
       }
-
       setShowAreaModal(false);
-      traerAreas(verEliminadas); // Recargamos lista
+      traerAreas(verEliminadas);
     } catch (err) {
       console.error(err);
-      // El toast de error ya suele manejarse en el hook o servicio
     }
   };
 
-  // --- HANDLERS MODAL CONFIRMACIÓN (BORRAR / RESTAURAR) ---
-
+  // --- HANDLERS CONFIRM ---
   const openConfirmModal = (id: string, action: ActionType) => {
     setIdSelected(id);
     setActionType(action);
@@ -81,7 +70,6 @@ const AdminAreasPage = () => {
 
   const handleConfirmAction = async () => {
     if (!idSelected || !actionType) return;
-
     try {
       if (actionType === "delete") {
         await eliminarArea(idSelected);
@@ -100,8 +88,6 @@ const AdminAreasPage = () => {
     }
   };
 
-  // --- RENDER ---
-
   if (loading && areas.length === 0) {
     return (
       <div className="p-8 text-center text-gray-500">Cargando áreas...</div>
@@ -110,9 +96,7 @@ const AdminAreasPage = () => {
 
   if (error) {
     return (
-      <div className="p-8 bg-red-100 text-red-700 rounded border border-red-200">
-        Error: {error}
-      </div>
+      <div className="p-8 bg-red-100 text-red-700 rounded">Error: {error}</div>
     );
   }
 
@@ -130,7 +114,6 @@ const AdminAreasPage = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {/* Toggle Ver Eliminadas */}
           <label className="flex items-center gap-3 cursor-pointer bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors select-none">
             <div className="relative">
               <input
@@ -155,7 +138,6 @@ const AdminAreasPage = () => {
             </span>
           </label>
 
-          {/* Botón Crear */}
           <button
             onClick={handleOpenCreate}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2 shadow-sm font-medium"
@@ -165,8 +147,8 @@ const AdminAreasPage = () => {
         </div>
       </div>
 
-      {/* TABLA FULL WIDTH */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+      {/* --- VISTA DESKTOP (TABLA) --- */}
+      <div className="hidden md:block bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
         <div className="overflow-x-auto">
           <table className="w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -183,93 +165,56 @@ const AdminAreasPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {areas.map((area) => (
-                <tr
-                  key={area.id}
-                  className={`transition-colors duration-150 ${
-                    area.is_deleted ? "bg-red-50" : "hover:bg-gray-50"
-                  }`}
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span
-                        className={`font-medium ${
-                          area.is_deleted
-                            ? "text-gray-500 line-through"
-                            : "text-gray-900"
-                        }`}
-                      >
-                        {area.nombre}
-                      </span>
-                      {area.is_deleted && (
-                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                          Eliminada
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div
-                      className={`text-sm ${
-                        area.is_deleted ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
-                      {area.descripcion || "—"}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {/* Botón EDITAR (Solo si no está eliminada) */}
-                      {!area.is_deleted && (
-                        <button
-                          onClick={() => handleOpenEdit(area)}
-                          className="text-indigo-600 hover:text-indigo-900 p-2 rounded hover:bg-indigo-50 transition"
-                          title="Editar"
-                        >
-                          <FaEdit size={18} />
-                        </button>
-                      )}
-
-                      {/* Botón ELIMINAR / RESTAURAR */}
-                      {area.is_deleted ? (
-                        <button
-                          onClick={() => openConfirmModal(area.id, "restore")}
-                          className="text-green-600 hover:text-green-900 p-2 rounded hover:bg-green-50 transition"
-                          title="Restaurar"
-                        >
-                          <FaUndo size={16} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => openConfirmModal(area.id, "delete")}
-                          className="text-red-600 hover:text-red-900 p-2 rounded hover:bg-red-50 transition"
-                          title="Eliminar"
-                        >
-                          <FaTrashAlt size={16} />
-                        </button>
-                      )}
-                    </div>
+              {areas.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="px-6 py-10 text-center text-gray-500"
+                  >
+                    No hay áreas para mostrar.
+                    {!verEliminadas && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Prueba activando "Ver Eliminadas".
+                      </p>
+                    )}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                areas.map((area) => (
+                  <AreaRow
+                    key={area.id}
+                    area={area}
+                    onEdit={handleOpenEdit}
+                    onDelete={(id) => openConfirmModal(id, "delete")}
+                    onRestore={(id) => openConfirmModal(id, "restore")}
+                  />
+                ))
+              )}
             </tbody>
           </table>
-
-          {areas.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No hay áreas para mostrar.</p>
-              {!verEliminadas && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Prueba activando "Ver Eliminadas" si buscas una antigua.
-                </p>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* --- MODALES --- */}
+      {/* --- VISTA MÓVIL (TARJETAS) --- */}
+      <div className="md:hidden flex flex-col gap-4">
+        {areas.length === 0 ? (
+          <div className="text-center py-10 text-gray-500">
+            No hay áreas para mostrar.
+          </div>
+        ) : (
+          areas.map((area) => (
+            <AreaCard
+              key={area.id}
+              area={area}
+              onEdit={handleOpenEdit}
+              onDelete={(id) => openConfirmModal(id, "delete")}
+              onRestore={(id) => openConfirmModal(id, "restore")}
+            />
+          ))
+        )}
+      </div>
 
+      {/* --- MODALES --- */}
       <AreaModal
         open={showAreaModal}
         onClose={() => setShowAreaModal(false)}
