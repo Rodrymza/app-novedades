@@ -5,6 +5,7 @@ export interface CreateUserBody {
   nombre: string;
   username: string;
   email: string;
+  documento: string;
   password: string;
   rol?: "OPERADOR" | "SUPERVISOR";
 }
@@ -14,6 +15,7 @@ export interface UserResponse {
   apellido: string;
   nombre: string;
   username: string;
+  documento: string;
   email: string;
   rol: "OPERADOR" | "SUPERVISOR";
   is_deleted: boolean;
@@ -49,5 +51,6 @@ export interface IEditUser {
   apellido: string;
   nombre: string;
   email: string;
+  documento: string;
 }
 export type UserResponseData = UserResponse | ErrorResponse;

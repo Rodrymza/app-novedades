@@ -10,6 +10,7 @@ import {
 } from "../interfaces/user.interfaces";
 import { Types } from "mongoose";
 import { validarYFormatearDatos } from "../utils/user.validators";
+import { hashearPassword } from "../utils/hashPassword";
 
 export const findAllUsers = async (
   req: Request,
@@ -19,7 +20,7 @@ export const findAllUsers = async (
   try {
     const users = await Usuario.find().populate({
       path: "audit_delete.usuario_id",
-      select: "nombre apellido username",
+      select: "nombre apellido username documento",
     });
     const usersDto = users.map(UsuarioMapper.toDto);
     res.status(200).json(usersDto);
@@ -33,7 +34,7 @@ export const getUsersList = async (
 ) => {
   try {
     const users = await Usuario.find({ is_deleted: false })
-      .select("id nombre apellido")
+      .select("id nombre apellido documento")
       .sort({ apellido: 1 })
       .lean();
     res.status(200).json(users);
@@ -202,7 +203,26 @@ export const modificarPerfil = async (
           "El email ingresado ya está en uso por otro usuario."
         );
       }
+
       usuarioAModificar.email = datosLimpios.email;
+    }
+
+    if (
+      datosLimpios.documento &&
+      datosLimpios.documento !== usuarioAModificar.documento
+    ) {
+      const docExiste = await Usuario.exists({
+        documento: datosLimpios.documento,
+      });
+      if (docExiste) {
+        throw new AppError(
+          "Conflicto de datos",
+          409,
+          "El documento ingresado ya está en uso por otro usuario."
+        );
+      }
+
+      usuarioAModificar.documento = datosLimpios.documento;
     }
 
     // 5. ASIGNACIÓN Y GUARDADO
@@ -213,6 +233,36 @@ export const modificarPerfil = async (
     await usuarioAModificar.save();
 
     return res.status(200).json(UsuarioMapper.toDto(usuarioAModificar));
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restablecerContrasenia = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const usuarioEncontrado = await Usuario.findById(id);
+
+    if (!usuarioEncontrado) {
+      throw new AppError(
+        "Usuario no encontrado",
+        404,
+        "No se encontro un usuario con el id proporcionado"
+      );
+    }
+    usuarioEncontrado.password = await hashearPassword(
+      usuarioEncontrado.documento
+    );
+    await usuarioEncontrado.save();
+
+    return res.status(200).json({
+      message:
+        "Contraseña restablecida correctamente, ahora el valor es el número de documento",
+    });
   } catch (error) {
     next(error);
   }

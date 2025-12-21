@@ -4,6 +4,7 @@ import {
   findAllUsers,
   getUsersList,
   modificarPerfil,
+  restablecerContrasenia,
   restaurarUsuario,
 } from "../controller/userController";
 import { esSupervisor, validarToken } from "../utils/tokenService";
@@ -20,5 +21,11 @@ userRoutes.patch(
   restaurarUsuario
 );
 userRoutes.patch("/:id/modificar", validarToken, esSupervisor, modificarPerfil);
+userRoutes.patch(
+  "/:id/restablecer-constrasenia",
+  validarToken,
+  esSupervisor,
+  restablecerContrasenia
+);
 
 export default userRoutes;

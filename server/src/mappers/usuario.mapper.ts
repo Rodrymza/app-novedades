@@ -8,6 +8,7 @@ export class UsuarioMapper {
       nombre: doc?.nombre || "Eliminado",
       username: doc?.username || "Desconocido",
       email: doc?.email || "Desconocido",
+      documento: doc?.documento || "Desconocido",
       rol: (doc?.rol as Rol) || ("Operador" as Rol),
       is_deleted: doc?.is_deleted || false,
     };

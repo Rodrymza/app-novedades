@@ -40,4 +40,12 @@ export const UserService = {
     );
     return respuesta.data;
   },
+
+  restorePassword: async (id_usuario: string) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id_usuario}/restablecer-constrasenia`,
+      {}
+    );
+    return respuesta.data;
+  },
 };

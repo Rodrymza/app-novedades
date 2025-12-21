@@ -107,6 +107,12 @@ function ProfilePage() {
                 value={perfil.email}
                 icon={<FaEnvelope />}
               />
+              {/* Campo Documento */}
+              <ProfileField
+                label="Documento"
+                value={perfil.documento}
+                icon={<FaEnvelope />}
+              />
             </div>
           </div>
 

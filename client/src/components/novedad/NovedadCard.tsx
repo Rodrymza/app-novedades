@@ -76,7 +76,7 @@ export const NovedadCard = ({ novedad, onRestore, onDelete }: Props) => {
 
         <div className="flex flex-col items-end gap-2">
           <span
-            className={`px-2 py-0.5 rounded-full font-medium border text-xs ${
+            className={`px-2 py-0.5 rounded-full font-medium border text-base ${
               isDeleted
                 ? "bg-white border-red-300 text-red-700"
                 : "bg-indigo-100 text-indigo-700 border-indigo-200"

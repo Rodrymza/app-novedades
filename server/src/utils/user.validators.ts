@@ -13,9 +13,10 @@ const toTitleCase = (str: string): string => {
 // Regex para solo letras y espacios (permite tildes y ñ)
 const nameRegex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]+$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const documentoRegex = /^\d{8}$/;
 
 export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
-  const { nombre, apellido, email } = data;
+  const { nombre, apellido, email, documento } = data;
   const datosFormateados: Partial<UserUpdateDTO> = {};
 
   // --- VALIDACIÓN DE NOMBRE ---
@@ -69,6 +70,25 @@ export const validarYFormatearDatos = (data: Partial<UserUpdateDTO>) => {
       );
     }
     datosFormateados.email = emailTrim;
+  }
+  // --- VALIDACIÓNd DE DOCUMENTO ---
+  if (documento !== undefined) {
+    const docTrim = documento.toString().trim(); // Aseguramos string
+    if (docTrim.length < 7 || docTrim.length > 12) {
+      throw new AppError(
+        "Error en documento",
+        400,
+        "El documento debe tener entre 7 y 12 dígitos."
+      );
+    }
+    if (!documentoRegex.test(docTrim)) {
+      throw new AppError(
+        "Error en documento",
+        400,
+        "El documento solo debe contener números."
+      );
+    }
+    datosFormateados.documento = docTrim;
   }
 
   return datosFormateados;
