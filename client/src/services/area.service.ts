@@ -23,4 +23,12 @@ export const AreaService = {
     const { data } = await axiosClient.patch(`/areas/${id}/restaurar`, {});
     return data;
   },
+
+  actualizarArea: async (id: string, nuevosDatos: CreateArea) => {
+    const { data } = await axiosClient.patch(
+      `/areas/${id}/actualizar`,
+      nuevosDatos
+    );
+    return data;
+  },
 };

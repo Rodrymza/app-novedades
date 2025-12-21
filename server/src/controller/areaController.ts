@@ -136,3 +136,59 @@ export const restaurarArea = async (
 
   return res.status(200).json(AreaMapper.toDTO(areaEncontrada));
 };
+
+export const actualizarArea = async (
+  req: Request,
+  res: Response<AreaResponseData>,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { nombre, descripcion } = req.body;
+
+    const area = await Area.findById(id);
+
+    if (!area) {
+      throw new AppError(
+        "Area no encontrada",
+        404,
+        "No se encontro un area con el id especificado"
+      );
+    }
+
+    if (area?.is_deleted) {
+      throw new AppError(
+        "Area eliminada",
+        400,
+        "No puede actualizarse un area eliminada"
+      );
+    }
+
+    if (nombre && nombre.trim() !== "") {
+      const nombreNormalizado = nombre.trim();
+      const nombreDuplicado = await Area.exists({
+        nombre: nombreNormalizado,
+        _id: { $ne: id },
+      });
+
+      if (nombreDuplicado) {
+        throw new AppError(
+          "Nombre duplicado",
+          400,
+          "El nombre ya existe en la base de datos"
+        );
+      }
+      area.nombre = nombreNormalizado;
+    }
+
+    if (descripcion && descripcion.trim() !== "") {
+      area.descripcion = descripcion.trim();
+    }
+
+    await area.save();
+
+    return res.status(200).json(AreaMapper.toDTO(area));
+  } catch (error) {
+    next(error);
+  }
+};

@@ -87,12 +87,29 @@ export const useAreas = () => {
     [traerAreas, filtroActual]
   );
 
+  const actualizarArea = useCallback(
+    async (id: string, nuevosDatos: CreateArea) => {
+      try {
+        await toast.promise(AreaService.actualizarArea(id, nuevosDatos), {
+          loading: "Actualizando área...",
+          success: "Área actualizada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        traerAreas(filtroActual);
+      } catch (error) {
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas, filtroActual]
+  );
+
   return {
     error,
     traerAreas,
     crearArea,
     eliminarArea,
     restaurarArea,
+    actualizarArea,
     areas,
     loading,
   };
