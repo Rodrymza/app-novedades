@@ -99,6 +99,17 @@ export const useUsers = () => {
     []
   );
 
+  const restablecerContrasenia = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      await toast.promise(UserService.restorePassword(id), {
+        loading: "Restableciendo contraseña...",
+        success: "Contraseña restablecida correctamente",
+        error: (err) => getErrorMessage(err),
+      });
+    } catch (error) {}
+  }, []);
+
   return {
     error,
     traerUsuarios,
@@ -108,6 +119,7 @@ export const useUsers = () => {
     getPerfil,
     restaurarUsuario,
     modificarUsuario,
+    restablecerContrasenia,
     perfil,
   };
 };
