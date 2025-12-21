@@ -12,7 +12,6 @@ import CreateNovedadPage from "./pages/CreateNovedadPage";
 import AdminAreasPage from "./pages/AdminAreasPage";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
-import AuditNovedadesPage from "./pages/AdminNovedadesPage";
 import AdminNovedadesPage from "./pages/AdminNovedadesPage";
 
 function App() {
