@@ -89,8 +89,11 @@ const DashboardPage = () => {
 
         {/* --- ESTADOS DE CARGA / ERROR / VACÍO --- */}
         {loading && (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex flex-col justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="mt-4 text-gray-600 font-medium animate-pulse">
+              Cargando novedades...
+            </p>
           </div>
         )}
 

@@ -90,7 +90,14 @@ const AdminUserPage = () => {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Cargando usuarios...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-gray-600 font-medium animate-pulse">
+          Cargando usuarios...
+        </p>
+      </div>
+    );
   }
 
   return (
