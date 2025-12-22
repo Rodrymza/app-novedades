@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { IUsuarioDocument, Rol } from "../model/usuario";
+import { IUsuarioDocument } from "../model/usuario";
 import { NextFunction, Request, Response } from "express";
 import { getMessage } from "./getMessage";
 import { JwtPayload } from "../interfaces/jwt.interfaces";
@@ -10,7 +10,7 @@ const expiraEn = "2h";
 
 if (!secreto) {
   throw new Error(
-    "Ocurrio un error grave. JWT no esta correctamnete definido en el archivo .env.!"
+    "Ocurrio un error grave. JWT no esta correctamente definido en el archivo .env.!"
   );
 }
 

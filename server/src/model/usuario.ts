@@ -1,15 +1,26 @@
-import { Document, HydratedDocument, model, Schema } from "mongoose";
+import { HydratedDocument, model, Schema, Types } from "mongoose";
 
 export type Rol = "OPERADOR" | "SUPERVISOR";
 
 export interface IUsuario {
   apellido: string;
-  nombre : string;
-  username : string;
+  nombre: string;
+  username: string;
   email: string;
+  documento: string;
   password: string;
   rol: Rol;
-
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: Date;
+    usuario_id: Types.ObjectId;
+    motivo: string;
+  };
+  audit_restore?: {
+    fecha: Date;
+    usuario_id: Types.ObjectId;
+    motivo: string;
+  };
 }
 
 const userShema = new Schema<IUsuario>(
@@ -38,15 +49,29 @@ const userShema = new Schema<IUsuario>(
       lowercase: true,
       trim: true,
     },
+    documento: {
+      type: String,
+      required: true,
+      trim: true,
+      length: 8,
+    },
     password: {
       type: String,
       required: true,
-      
     },
     rol: {
       type: String,
       enum: ["OPERADOR", "SUPERVISOR"],
       default: "OPERADOR",
+    },
+    is_deleted: { type: Boolean, default: false },
+    audit_delete: {
+      fecha: { type: Date },
+      usuario_id: {
+        type: Schema.Types.ObjectId,
+        ref: "Usuario",
+      },
+      motivo: { type: String },
     },
   },
   {
@@ -54,7 +79,8 @@ const userShema = new Schema<IUsuario>(
   }
 );
 
+userShema.index({ email: 1 });
+userShema.index({ is_deleted: 1 });
 
-export default model('Usuario', userShema);
+export default model("Usuario", userShema);
 export type IUsuarioDocument = HydratedDocument<IUsuario>;
-

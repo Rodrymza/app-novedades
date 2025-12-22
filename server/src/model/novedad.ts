@@ -5,6 +5,12 @@ export interface INovedad {
   autor: Types.ObjectId;
   area: Types.ObjectId;
   etiquetas: string[];
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: Date;
+    usuario_id: Types.ObjectId;
+    motivo: string;
+  };
 }
 const novedadSchema = new Schema(
   {

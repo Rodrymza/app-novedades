@@ -1,5 +1,10 @@
 import { axiosClient } from "../api/axios";
-import type { UserList, UserResponse } from "../types/user.interfaces";
+import type {
+  IDeleteUser,
+  IEditUser,
+  UserList,
+  UserResponse,
+} from "../types/user.interfaces";
 
 export const UserService = {
   getUsers: async (): Promise<UserResponse[]> => {
@@ -12,6 +17,35 @@ export const UserService = {
   },
   getProfile: async () => {
     const respuesta = await axiosClient.get<UserResponse>("/auth/profile");
+    return respuesta.data;
+  },
+  deleteUser: async (reqEliminar: IDeleteUser) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${reqEliminar.id_usuario}/eliminar`,
+      reqEliminar
+    );
+    return respuesta.data;
+  },
+  restoreUser: async (id_usuario: string) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id_usuario}/restaurar`,
+      {}
+    );
+    return respuesta.data;
+  },
+  editUser: async (id: string, data: IEditUser) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id}/modificar`,
+      data
+    );
+    return respuesta.data;
+  },
+
+  restorePassword: async (id_usuario: string) => {
+    const respuesta = await axiosClient.patch<UserResponse>(
+      `/usuarios/${id_usuario}/restablecer-constrasenia`,
+      {}
+    );
     return respuesta.data;
   },
 };

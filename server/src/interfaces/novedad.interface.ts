@@ -49,6 +49,7 @@ export interface FiltroNovedad {
   fechaInicio: string;
   fechaFin: string;
   textoBusqueda: string;
+  is_deleted: boolean;
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;

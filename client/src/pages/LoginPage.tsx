@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 // 1. Importamos el Hook del contexto y el de navegación
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
@@ -12,7 +13,24 @@ const LoginPage = () => {
   const { signin, isAuthenticated, errors } = useAuth();
   const navigate = useNavigate();
 
-  // 3. EFECTO DE REDIRECCIÓN
+  // 3. EFECTO DE DESPERTAR BACKEND
+  useEffect(() => {
+    const despertarBackend = async () => {
+      try {
+        // Llamamos a la ruta health que creamos en el backend
+        // No nos importa la respuesta, solo queremos que el servidor arranque
+        await axios.get("/api/health");
+        console.log("📡 Ping al servidor enviado");
+      } catch (error) {
+        // Silencioso, no queremos asustar al usuario si falla el ping
+        console.log("Despertando servidor...");
+      }
+    };
+
+    despertarBackend();
+  }, []);
+
+  // 4. EFECTO DE REDIRECCIÓN
   // Si 'isAuthenticated' cambia a true (porque el login fue exitoso),
   // nos vamos automáticamente al dashboard.
   useEffect(() => {
@@ -24,7 +42,7 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 4. Usamos la función del contexto, NO el servicio directo.
+    // 5. Usamos la función del contexto, NO el servicio directo.
     // El contexto llamará al servicio y actualizará el estado global.
     await signin({ username, password });
   };
@@ -37,7 +55,7 @@ const LoginPage = () => {
       >
         <h2 className="text-2xl font-bold text-center mb-6">Iniciar sesión</h2>
 
-        {/* 5. MOSTRAR ERRORES */}
+        {/* 6. MOSTRAR ERRORES */}
         {/* Si el backend rechaza el login, mostramos el mensaje aquí */}
         {errors.map((error, i) => (
           <div

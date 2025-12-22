@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import Usuario from "../model/usuario";
 import Area from "../model/area";
 import Novedad from "../model/novedad";
@@ -6,7 +6,6 @@ import { NovedadMapper } from "../mappers/novedad.mapper";
 import { FilterQuery } from "mongoose";
 import {
   CreateNovedad,
-  EliminarNovedad,
   FiltroNovedad,
   NovedadResponse,
   NovedadResponseData,
@@ -14,6 +13,7 @@ import {
 import { Rol } from "../interfaces/user.interfaces";
 import { AppError } from "../errors/appError";
 import { validarObjectId } from "../utils/validateObjectId";
+import { Types } from "mongoose";
 
 export const crearNovedad: RequestHandler<
   {},
@@ -76,6 +76,14 @@ export const crearNovedad: RequestHandler<
       );
     }
 
+    if (area.is_deleted) {
+      throw new AppError(
+        `Área ${area.nombre} elimininada`,
+        400,
+        "No se pueden generar novedades sobre áreas eliminadas"
+      );
+    }
+
     const nuevaNovedad = await Novedad.create({
       contenido: contenido.trim(),
       usuario: user_id,
@@ -88,10 +96,7 @@ export const crearNovedad: RequestHandler<
       { path: "area", select: "nombre" },
     ]);
 
-    const novedadRespuesta = NovedadMapper.toDto(
-      novedadPoblada,
-      usuario.rol as Rol
-    );
+    const novedadRespuesta = NovedadMapper.toDto(novedadPoblada);
     return res.status(201).json(novedadRespuesta);
   } catch (error) {
     next(error);
@@ -100,29 +105,15 @@ export const crearNovedad: RequestHandler<
 
 export const findAllNovedades: RequestHandler = async (req, res, next) => {
   try {
-    //muestra solo novedades borradas a usuarios supervisores
-    let filtroBorrados = {};
-    const usuario = req.user;
-    if (usuario && usuario.rol == Rol.OPERADOR) {
-      filtroBorrados = {
-        is_deleted: false,
-      };
-    }
-    if (!usuario) {
-      throw new AppError(
-        "Usuario no autenticado",
-        401,
-        "Debes estar autenticado para ver las novedades"
-      );
-    }
-    const novedades = await Novedad.find(filtroBorrados)
+    const LIMIT = 400;
+    const novedades = await Novedad.find({ is_deleted: false })
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .populate("audit_delete.usuario_id", "nombre apellido username")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(LIMIT);
 
     const novedadesFormateadas = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad, usuario.rol as Rol);
+      return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(novedadesFormateadas);
   } catch (error) {
@@ -137,12 +128,28 @@ export const filtrarNovedades: RequestHandler<
   {}
 > = async (req, res, next) => {
   try {
-    const { usuario_id, area_id, tags, fechaInicio, fechaFin, textoBusqueda } =
-      req.body;
+    const LIMIT = 200;
+    const {
+      usuario_id,
+      area_id,
+      tags,
+      fechaInicio,
+      fechaFin,
+      textoBusqueda,
+      is_deleted,
+    } = req.body;
 
     const filtro: FilterQuery<any> = {};
 
     filtro.is_deleted = false;
+
+    if (req.user?.rol === Rol.SUPERVISOR) {
+      if (is_deleted !== undefined && is_deleted !== null) {
+        filtro.is_deleted = is_deleted;
+      } else {
+        delete filtro.is_deleted;
+      }
+    }
 
     //Logica de texto libre
     if (textoBusqueda) {
@@ -183,10 +190,12 @@ export const filtrarNovedades: RequestHandler<
     const novedades = await Novedad.find(filtro)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
-      .sort({ createdAt: -1 });
+      .populate("audit_delete.usuario_id", "apellido nombre username")
+      .sort({ createdAt: -1 })
+      .limit(LIMIT);
 
     const respuesta: NovedadResponse[] = novedades.map((novedad) => {
-      return NovedadMapper.toDto(novedad, Rol.OPERADOR);
+      return NovedadMapper.toDto(novedad);
     });
     return res.status(200).json(respuesta);
   } catch (error) {
@@ -194,23 +203,21 @@ export const filtrarNovedades: RequestHandler<
   }
 };
 
-export const eliminarNovedad: RequestHandler<
-  {},
-  NovedadResponseData,
-  EliminarNovedad,
-  {}
-> = async (req, res, next) => {
+export const eliminarNovedad = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const MENSAJE_ERROR = "Error de validación al eliminar la novedad";
   try {
-    const { novedad_id, fecha, motivo } = req.body;
+    const novedad_id = req.params.id;
+    const { motivo } = req.body;
     const usuario_id = req.user?.id;
-    let errorMessage = [];
     let erroresValidacion: string[] = [];
 
     if (!usuario_id) erroresValidacion.push("Falta id de usuario");
     if (!novedad_id) erroresValidacion.push("Falta id de novedad");
 
-    if (!fecha) erroresValidacion.push("Falta fecha de eliminacion");
     if (!motivo) erroresValidacion.push("Falta motivo de eliminacion");
 
     if (erroresValidacion.length > 0) {
@@ -218,15 +225,6 @@ export const eliminarNovedad: RequestHandler<
     }
     validarObjectId(usuario_id!, "usuario_id");
     validarObjectId(novedad_id, "novedad_id");
-
-    const usuario = await Usuario.findById(usuario_id);
-    if (!usuario) {
-      throw new AppError(
-        "El usuario no existe",
-        404,
-        "No se encontro usuario con el id especificado"
-      );
-    }
 
     const novedad = await Novedad.findById(novedad_id);
 
@@ -246,34 +244,60 @@ export const eliminarNovedad: RequestHandler<
       );
     }
 
-    const novedadActualizada = await Novedad.findByIdAndUpdate(
-      novedad_id,
-      {
-        is_deleted: true,
-        audit_delete: {
-          fecha: fecha,
-          usuario_id: usuario?._id,
-          motivo: motivo,
-        },
-      },
-      { new: true }
-    )
-      .populate("usuario", "nombre apellido username")
-      .populate("area", "nombre")
-      .populate("audit_delete.usuario_id", "nombre apellido username");
+    novedad.is_deleted = true;
 
-    if (!novedadActualizada) {
+    novedad.audit_delete = {
+      fecha: new Date(),
+      usuario_id: new Types.ObjectId(usuario_id),
+      motivo: motivo,
+    };
+    await novedad.save();
+
+    await novedad.populate([
+      { path: "usuario", select: "nombre apellido username" },
+      { path: "area", select: "nombre" },
+      { path: "audit_delete.usuario_id", select: "nombre apellido username" },
+    ]);
+
+    const novedadRes = NovedadMapper.toDto(novedad);
+    return res.status(201).json(novedadRes);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const restaurarNovedad = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const novedadEncontrada = await Novedad.findById(id);
+
+    if (!novedadEncontrada) {
       throw new AppError(
-        "No se pudo realizar la eliminacion. Novedad no encontrada",
+        "Novedad no encontrada",
         404,
-        MENSAJE_ERROR
+        "No se encontro con la novedad especificada"
       );
     }
-    const novedadRes = NovedadMapper.toDto(
-      novedadActualizada,
-      usuario.rol as Rol
-    );
-    return res.status(201).json(novedadRes);
+
+    if (!novedadEncontrada.is_deleted) {
+      throw new AppError(
+        "Novedad activa",
+        400,
+        "No puede restaurarse una novedad activa"
+      );
+    }
+
+    novedadEncontrada.is_deleted = false;
+    novedadEncontrada.audit_delete = undefined;
+
+    await novedadEncontrada.save();
+
+    return res.status(200).json(NovedadMapper.toDto(novedadEncontrada));
   } catch (error) {
     next(error);
   }

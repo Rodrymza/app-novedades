@@ -1,23 +1,32 @@
 import { useCallback, useState } from "react";
 import type { AreaResponse, CreateArea } from "../types/area.interface";
 import { AreaService } from "../services/area.service";
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 export const useAreas = () => {
   const [areas, setAreas] = useState<AreaResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const traerAreas = useCallback(async () => {
+  // 1. ESTADO DE MEMORIA: Guardamos el último filtro aplicado
+  const [filtroActual, setFiltroActual] = useState(false);
+
+  // 2. MODIFICAMOS TRAER AREAS
+  const traerAreas = useCallback(async (todas: boolean = false) => {
     try {
       setLoading(true);
       setError(null);
 
-      const data = await AreaService.getAllAreas();
+      // Guardamos la preferencia actual para usarla después
+      setFiltroActual(todas);
+
+      const data = await AreaService.getAllAreas(todas);
       if (data) {
         setAreas(data);
       }
     } catch (error) {
-      setError("No se pudieron cargar los usuarios.");
+      setError("No se pudieron cargar las áreas.");
     } finally {
       setLoading(false);
     }
@@ -25,25 +34,82 @@ export const useAreas = () => {
 
   const crearArea = useCallback(
     async (datosArea: CreateArea) => {
-      setLoading(true);
-      setError(null);
       try {
-        const data = await AreaService.crearArea(datosArea);
-        traerAreas();
-        return data;
+        const resultado = await toast.promise(
+          AreaService.crearArea(datosArea),
+          {
+            loading: "Creando área...",
+            success: "Área creada correctamente",
+            error: (err) => getErrorMessage(err),
+          }
+        );
+        // 3. USAMOS LA MEMORIA: Refrescamos usando el estado guardado
+        traerAreas(filtroActual);
+        return resultado;
       } catch (error) {
-        setError("No se pudo crear el área.");
-      } finally {
-        setLoading(false);
+        console.log(getErrorMessage(error));
       }
     },
-    [traerAreas]
+    [traerAreas, filtroActual] // Agregamos filtroActual a dependencias
+  );
+
+  const eliminarArea = useCallback(
+    async (id: string) => {
+      try {
+        await toast.promise(AreaService.borrarArea(id), {
+          loading: "Eliminando area",
+          success: "Area eliminada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        // 3. USAMOS LA MEMORIA
+        traerAreas(filtroActual);
+      } catch (error) {
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas, filtroActual]
+  );
+
+  const restaurarArea = useCallback(
+    async (id: string) => {
+      try {
+        await toast.promise(AreaService.restaurarArea(id), {
+          loading: "Restaurando area",
+          success: "Area restaurada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        // 3. USAMOS LA MEMORIA
+        traerAreas(filtroActual);
+      } catch (error) {
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas, filtroActual]
+  );
+
+  const actualizarArea = useCallback(
+    async (id: string, nuevosDatos: CreateArea) => {
+      try {
+        await toast.promise(AreaService.actualizarArea(id, nuevosDatos), {
+          loading: "Actualizando área...",
+          success: "Área actualizada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+        traerAreas(filtroActual);
+      } catch (error) {
+        console.log(getErrorMessage(error));
+      }
+    },
+    [traerAreas, filtroActual]
   );
 
   return {
     error,
     traerAreas,
     crearArea,
+    eliminarArea,
+    restaurarArea,
+    actualizarArea,
     areas,
     loading,
   };

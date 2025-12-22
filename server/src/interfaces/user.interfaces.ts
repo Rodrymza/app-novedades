@@ -10,6 +10,7 @@ export interface CreateUserBody {
   apellido: string;
   nombre: string;
   username: string;
+  documento: string;
   email: string;
   password: string;
   rol?: Rol;
@@ -21,7 +22,26 @@ export interface UserResponse {
   nombre: string;
   username: string;
   email: string;
+  documento: string;
   rol: Rol;
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: string;
+    usuario: {
+      id: string;
+      nombre: string;
+      apellido: string;
+    };
+    motivo: string;
+  };
+}
+
+export interface UserUpdateDTO {
+  apellido?: string;
+  nombre?: string;
+  email?: string;
+  documento?: string;
+  rol?: string;
 }
 
 export interface LoginUser {

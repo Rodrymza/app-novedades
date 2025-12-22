@@ -20,15 +20,27 @@ export interface NovedadResponse {
     nombre: string;
   };
   etiquetas?: string[];
+  is_deleted: boolean;
+  audit_delete?: {
+    fecha: string;
+    usuario: {
+      id: string;
+      nombre: string;
+      apellido: string;
+      username: string;
+    };
+    motivo: string;
+  };
   fecha: string;
 }
 export interface FiltroNovedad {
-  usuario_id: string | undefined;
-  area_id: string | undefined;
-  tags: string[] | undefined;
-  fechaInicio: string | undefined;
-  fechaFin: string | undefined;
-  textoBusqueda: string | undefined;
+  usuario_id?: string | undefined;
+  area_id?: string | undefined;
+  tags?: string[] | undefined;
+  fechaInicio?: string | undefined;
+  fechaFin?: string | undefined;
+  textoBusqueda?: string | undefined;
+  is_deleted?: boolean | undefined;
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;

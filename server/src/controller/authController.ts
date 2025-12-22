@@ -3,57 +3,88 @@ import Usuario from "../model/usuario";
 import {
   CreateUserBody,
   LoginUser,
+  Rol,
   UserResponse,
   UserResponseData,
 } from "../interfaces/user.interfaces";
 import { hashearPassword, validarPassword } from "../utils/hashPassword";
 import { generarToken } from "../utils/tokenService";
 import { UsuarioMapper } from "../mappers/usuario.mapper";
+import { AppError } from "../errors/appError";
+import { validarYFormatearDatos } from "../utils/user.validators";
 
 export const crearUsuario: RequestHandler<
-  {}, // 1er Genérico: Params
-  UserResponseData, // 2do Genérico: Response Body
-  CreateUserBody, // 3er Genérico: Request Body
-  {} // 4to Genérico: Query
+  {},
+  UserResponseData,
+  CreateUserBody,
+  {}
 > = async (req, res, next) => {
   try {
-    const { apellido, nombre, username, email, password, rol } = req.body;
+    const { username, password, rol } = req.body;
 
-    // verificacion de usuario existente
+    // Procesado de campos campos formateables (Nombre, Apellido, Email, Documento)
+    const datosLimpios = validarYFormatearDatos(req.body);
+
+    if (
+      !datosLimpios.nombre ||
+      !datosLimpios.apellido ||
+      !datosLimpios.email ||
+      !datosLimpios.documento
+    ) {
+      throw new AppError(
+        "Faltan datos",
+        400,
+        "Nombre, apellido, email y documento son obligatorios."
+      );
+    }
+    if (!username || !password) {
+      throw new AppError(
+        "Faltan datos",
+        400,
+        "El nombre de usuario y la contraseña son obligatorios."
+      );
+    }
+
     const userExists = await Usuario.findOne({
-      $or: [{ email }, { username }],
+      $or: [
+        { email: datosLimpios.email },
+        { username: username },
+        { documento: datosLimpios.documento },
+      ],
     });
 
     if (userExists) {
-      const message =
-        userExists.email === email
-          ? "El email ya está registrado"
-          : "El nombre de usuario ya está en uso";
+      // Personalizamos el mensaje de error según qué campo chocó
+      let message = "El usuario ya existe.";
+      if (userExists.email === datosLimpios.email)
+        message = `El email '${datosLimpios.email}' ya está registrado`;
+      if (userExists.documento === datosLimpios.documento)
+        message = `El documento '${datosLimpios.documento}' ya está registrado`;
+      if (userExists.username === username)
+        message = `El usuario '${username}' ya está en uso`;
 
-      return res.status(400).json({
-        message: "Error de validación",
-        detail: message,
-      });
+      throw new AppError("Error de validacion", 409, message);
     }
+
     const hashedPassword = await hashearPassword(password);
 
     const user = await Usuario.create({
-      apellido,
-      nombre,
-      username,
-      email,
+      // A. Datos Formateados (Capitalizados y limpios)
+      apellido: datosLimpios.apellido,
+      nombre: datosLimpios.nombre,
+      email: datosLimpios.email,
+      documento: datosLimpios.documento,
+
+      // B. Datos Directos/Lógicos
+      username: username,
       password: hashedPassword,
-      rol: rol || "OPERADOR",
+      rol: rol || Rol.OPERADOR, // Default si no envían rol
     });
 
     if (user) {
-      const responseData: UserResponse = UsuarioMapper.toDto(user);
-
-      return res.status(201).json(responseData);
+      return res.status(201).json(UsuarioMapper.toDto(user));
     } else {
-      return res.status(400).json({
-        message: "Datos de usuario inválidos",
-      });
+      throw new AppError("Error interno", 500, "No se pudo crear el usuario");
     }
   } catch (error) {
     next(error);

@@ -26,4 +26,18 @@ export const NovedadService = {
     );
     return respuesta.data;
   },
+  borrarNovedad: async (novedad_id: string, motivo: string) => {
+    const respuesta = await axiosClient.patch<NovedadResponse>(
+      `/novedades/${novedad_id}/eliminar`,
+      { motivo }
+    );
+    return respuesta.data;
+  },
+  restaurarNovedad: async (novedad_id: string) => {
+    const respuesta = await axiosClient.patch<NovedadResponse>(
+      `/novedades/${novedad_id}/restaurar`,
+      {}
+    );
+    return respuesta.data;
+  },
 };

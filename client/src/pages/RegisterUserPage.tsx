@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // Definimos el estado inicial para limpiar el formulario fácilmente después
 const initialState = {
@@ -8,6 +8,7 @@ const initialState = {
   apellido: "",
   username: "",
   email: "",
+  documento: "",
   password: "",
   confirmPassword: "", // Campo extra solo para el frontend
   rol: "OPERADOR" as "OPERADOR" | "SUPERVISOR", // Default
@@ -17,6 +18,7 @@ const RegisterUserPage = () => {
   const [formData, setFormData] = useState(initialState);
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Traemos la función de registro del contexto
   const { signup, errors: contextErrors, clearErrors } = useAuth();
@@ -58,14 +60,15 @@ const RegisterUserPage = () => {
       const { confirmPassword, ...dataToSend } = formData;
 
       // 4. Llamamos al backend
-      await signup(dataToSend);
-
-      // 5. Éxito: Limpiamos formulario y mostramos mensaje
-      setSuccessMsg(`Usuario ${formData.username} creado con éxito.`);
-      setFormData(initialState);
+      const usuarioRegistrado = await signup(dataToSend);
 
       // Opcional: Hacer scroll arriba si el form es muy largo
-      window.scrollTo(0, 0);
+      if (usuarioRegistrado) {
+        setTimeout(() => {
+          setFormData(initialState);
+          navigate("/admin/gestion-usuarios");
+        }, 1500);
+      }
     } catch (error) {
       // El AuthContext ya maneja los errores del backend (errors)
       console.error("Error al crear usuario", error);
@@ -171,6 +174,22 @@ const RegisterUserPage = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 placeholder="juan@empresa.com"
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Documento
+              </label>
+              <input
+                type="text"
+                name="documento"
+                value={formData.documento}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                placeholder="Documento del usuario"
                 required
               />
             </div>
