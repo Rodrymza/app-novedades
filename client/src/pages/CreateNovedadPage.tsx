@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useNovedades } from "../hooks/useNovedades";
 import { AreaService } from "../services/area.service";
 import type { CreateNovedad } from "../types/novedad.interface";
@@ -35,7 +35,7 @@ const CreateNovedadPage = () => {
   useEffect(() => {
     const fetchAreas = async () => {
       try {
-        const data = await AreaService.getAllAreas();
+        const data = await AreaService.getAllAreas(false);
         setAreas(data);
         // Establecer un valor por defecto para el dropdown si existe
         if (data.length > 0) {
