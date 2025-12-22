@@ -14,9 +14,24 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = ["http://localhost:5173"];
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Permitir peticiones sin origen (como Postman o scripts móviles)
+      if (!origin) return callback(null, true);
+
+      // Si el origen está en la lista permitida, o si incluimos la URL de vercel más tarde
+      if (
+        allowedOrigins.indexOf(origin) !== -1 ||
+        origin.includes(".vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("No permitido por CORS"));
+      }
+    },
     credentials: true,
   })
 );
@@ -29,6 +44,9 @@ app.get("/", (req, res) => {
   res.send("API del Libro de Novedades corriendo...");
 });
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "Servidor activo!" });
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/novedades", novedadRoutes);
 app.use("/api/areas", areaRoutes);
