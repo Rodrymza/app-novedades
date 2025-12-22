@@ -132,8 +132,8 @@ export const loginUsuario: RequestHandler<
 
     res.cookie("jwt", token, {
       httpOnly: true, //El JS del frontend no puede leerla
-      secure: process.env.NODE_ENV === "production", // Solo enviar por HTTPS en producción
-      sameSite: "strict", // Protección extra contra ataques CSRF
+      secure: true, // Solo enviar por HTTPS en producción
+      sameSite: "none", // Protección extra contra ataques CSRF
       maxAge: 1000 * 60 * 60 * 24, // 1 día (expira en 24 horas, igual que el token)
     });
 
