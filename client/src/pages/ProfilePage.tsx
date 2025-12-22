@@ -31,6 +31,9 @@ function ProfilePage() {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="mt-4 text-gray-600 font-medium animate-pulse">
+          Cargando perfil...
+        </p>
       </div>
     );
   }
@@ -129,13 +132,6 @@ function ProfilePage() {
               {perfil.rol}
             </span>
           </div>
-
-          {/* Botón de Acción (Edición, pendiente) 
-          <div className="pt-6 border-t border-gray-100 flex justify-end">
-            <button className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold transition">
-              Editar Perfil
-            </button>
-          </div> */}
         </div>
       </div>
     </div>
