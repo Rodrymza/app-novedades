@@ -36,15 +36,13 @@ export const NovedadFilters = ({
   const [filters, setFilters] = useState(initialFilterState);
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [authors, setAuthors] = useState<UserList[]>([]);
-  const [loadingOptions, setLoadingOptions] = useState(true);
 
   // --- EFECTO para cargar opciones de dropdowns (omitted for brevity) ---
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        setLoadingOptions(true);
         const [areasData, usersData] = await Promise.all([
-          AreaService.getAllAreas(),
+          AreaService.getAllAreas(false),
           UserService.getUserList(),
         ]);
 
@@ -53,7 +51,6 @@ export const NovedadFilters = ({
       } catch (error) {
         console.error("Error al cargar opciones de filtro:", error);
       } finally {
-        setLoadingOptions(false);
       }
     };
     fetchOptions();
