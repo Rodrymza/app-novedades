@@ -1,14 +1,54 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 // Importamos los iconos que usaremos para embellecer los campos
 import { FaUserCircle, FaEnvelope, FaIdCard, FaBuilding } from "react-icons/fa";
 // Asumo que tu useUsers devuelve el UserResponse que definimos antes
 import { useUsers } from "../hooks/useUsers";
 import ProfileField from "../components/ui/ProfileField";
+import toast from "react-hot-toast";
 
 function ProfilePage() {
-  const { perfil, getPerfil, loading, error } = useUsers();
+  const { perfil, getPerfil, loading, error, actualizarContrasenia } =
+    useUsers();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [passwords, setPasswords] = useState({
+    current: "",
+    new: "",
+    confirm: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false); // Estado nuevo
 
-  // useEffect para cargar el perfil una sola vez al montar
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 1. Validación de Frontend: ¿Coinciden las nuevas?
+    if (passwords.new !== passwords.confirm) {
+      toast.error("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+
+    // 2. Validación de longitud (ahorra petición al back)
+    if (passwords.new.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      await actualizarContrasenia({
+        passwordActual: passwords.current,
+        passwordNuevo: passwords.new,
+      });
+
+      setIsModalOpen(false);
+      setPasswords({ current: "", new: "", confirm: "" });
+    } catch (error) {
+      console.error("Falló la actualización en el componente");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // El hook se encargará de llamar a /auth/profile
   useEffect(() => {
     getPerfil();
@@ -119,21 +159,110 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* SECCIÓN 2: ROL DEL SISTEMA */}
-          <div className="pt-6 border-t border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2 mb-3">
-              <FaBuilding className="w-4 h-4 text-blue-500" /> Nivel de Acceso
-            </h3>
-            <span
-              className={`inline-block px-4 py-2 text-sm font-semibold rounded-full border ${getRoleBadgeClasses(
-                perfil.rol
-              )}`}
-            >
-              {perfil.rol}
-            </span>
+          {/* SECCIÓN 2: AJUSTES Y ACCESO */}
+          <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2 mb-2">
+                <FaBuilding className="w-4 h-4 text-blue-500" /> Nivel de Acceso
+              </h3>
+              <span
+                className={`inline-flex items-center px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-md border ${getRoleBadgeClasses(
+                  perfil.rol
+                )}`}
+              >
+                {perfil.rol}
+              </span>
+            </div>
+
+            <div className="flex sm:justify-end">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex items-center gap-2 bg-gray-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors shadow-md active:scale-95"
+              >
+                <span>Cambiar Contraseña</span>
+                <span className="text-gray-400 text-xs">🔒</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      {/* EL MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-96 max-w-full m-4">
+            <h2 className="text-xl font-bold mb-4">Seguridad</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <div>
+                <label className="text-sm font-medium">Contraseña Actual</label>
+                <input
+                  type="password"
+                  className="w-full border p-2 rounded"
+                  value={passwords.current}
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, current: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Nueva Contraseña</label>
+                <input
+                  type="password"
+                  className="w-full border p-2 rounded"
+                  value={passwords.new}
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, new: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Repetir Nueva</label>
+                <input
+                  type="password"
+                  className="w-full border p-2 rounded"
+                  value={passwords.confirm}
+                  onChange={(e) =>
+                    setPasswords({ ...passwords, confirm: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setPasswords({ current: "", new: "", confirm: "" });
+                  }}
+                  className="text-gray-500 hover:text-gray-700 px-3 py-1"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`px-4 py-2 rounded text-white font-medium transition-colors flex items-center gap-2
+    ${
+      isSubmitting
+        ? "bg-blue-400 cursor-not-allowed"
+        : "bg-blue-600 hover:bg-blue-700"
+    }`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Guardando...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
