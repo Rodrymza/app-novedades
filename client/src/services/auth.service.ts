@@ -1,6 +1,7 @@
 import { axiosClient } from "../api/axios";
 import type {
   CreateUserBody,
+  IUpdatePassword,
   LoginUser,
   UserResponse,
 } from "../types/user.interfaces";
@@ -29,6 +30,14 @@ export const AuthService = {
 
   getProfile: async (): Promise<UserResponse> => {
     const response = await axiosClient.get<UserResponse>("/auth/profile"); // crear endpoint
+    return response.data;
+  },
+
+  updatePassword: async (actualizarContrasenia: IUpdatePassword) => {
+    const response = await axiosClient.patch(
+      "/auth/actualizar-contrasenia",
+      actualizarContrasenia
+    );
     return response.data;
   },
 };

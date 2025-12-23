@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import Usuario from "../model/usuario";
 import {
   CreateUserBody,
@@ -12,6 +12,7 @@ import { generarToken } from "../utils/tokenService";
 import { UsuarioMapper } from "../mappers/usuario.mapper";
 import { AppError } from "../errors/appError";
 import { validarYFormatearDatos } from "../utils/user.validators";
+import { JwtPayload } from "../interfaces/jwt.interfaces";
 
 export const crearUsuario: RequestHandler<
   {},
@@ -188,6 +189,65 @@ export const logoutUsuario: RequestHandler<
     }
     res.clearCookie("jwt");
     return res.status(200).json({ message: "Logout exitoso" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const actualizarContrasenia = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user as JwtPayload;
+    const { passwordActual, passwordNuevo } = req.body;
+
+    if (passwordActual == passwordNuevo) {
+      throw new AppError(
+        "Datos inválidos",
+        400,
+        "La nueva contraseña no puede ser igual a la actual."
+      );
+    }
+
+    if (!passwordNuevo || !passwordActual) {
+      throw new AppError(
+        "Datos faltantes",
+        400,
+        "Faltan datos para actualizar la contraseña."
+      );
+    }
+
+    const usuario = await Usuario.findById(user.id);
+
+    if (!usuario) {
+      throw new AppError(
+        "Usuario no encontrado",
+        404,
+        "No se encontró el usuario."
+      );
+    }
+
+    const passwordValido = await validarPassword(
+      passwordActual,
+      usuario.password
+    );
+
+    if (!passwordValido) {
+      throw new AppError(
+        "Contraseña incorrecta",
+        401,
+        "La contraseña actual no es correcta."
+      );
+    }
+
+    usuario.password = await hashearPassword(passwordNuevo);
+    await usuario.save();
+
+    return res.status(200).json({
+      message: "Contraseña actualizada correctamente.",
+    });
   } catch (error) {
     next(error);
   }

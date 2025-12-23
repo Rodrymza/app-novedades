@@ -2,11 +2,13 @@ import { useCallback, useState } from "react";
 import type {
   IDeleteUser,
   IEditUser,
+  IUpdatePassword,
   UserResponse,
 } from "../types/user.interfaces";
 import { UserService } from "../services/user.service";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../utils/getErrorMessage";
+import { AuthService } from "../services/auth.service";
 
 export const useUsers = () => {
   const [usuarios, setUsuarios] = useState<UserResponse[]>([]);
@@ -110,6 +112,22 @@ export const useUsers = () => {
     } catch (error) {}
   }, []);
 
+  const actualizarContrasenia = useCallback(
+    async (actualizarContrasenia: IUpdatePassword) => {
+      try {
+        await toast.promise(AuthService.updatePassword(actualizarContrasenia), {
+          loading: "Actualizando contraseña...",
+          success: "Contraseña actualizada correctamente",
+          error: (err) => getErrorMessage(err),
+        });
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
+    },
+    []
+  );
+
   return {
     error,
     traerUsuarios,
@@ -120,6 +138,7 @@ export const useUsers = () => {
     restaurarUsuario,
     modificarUsuario,
     restablecerContrasenia,
+    actualizarContrasenia,
     perfil,
   };
 };
