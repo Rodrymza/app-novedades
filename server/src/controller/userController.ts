@@ -1,13 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import Usuario, { IUsuario } from "../model/usuario";
+import Usuario from "../model/usuario";
 import { UsuarioMapper } from "../mappers/usuario.mapper";
 import { AppError } from "../errors/appError";
 import { JwtPayload } from "../interfaces/jwt.interfaces";
-import {
-  Rol,
-  UserResponseData,
-  UserUpdateDTO,
-} from "../interfaces/user.interfaces";
+import { Rol, UserUpdateDTO } from "../interfaces/user.interfaces";
 import { Types } from "mongoose";
 import { validarYFormatearDatos } from "../utils/user.validators";
 import { hashearPassword } from "../utils/hashPassword";
