@@ -54,4 +54,9 @@ export interface IEditUser {
   documento: string;
   rol: string;
 }
+
+export interface IUpdatePassword {
+  passwordActual: string;
+  passwordNuevo: string;
+}
 export type UserResponseData = UserResponse | ErrorResponse;
