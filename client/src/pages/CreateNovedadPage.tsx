@@ -189,7 +189,7 @@ const CreateNovedadPage = () => {
           <div className="pt-4 border-t mt-6">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 font-semibold transition transform active:scale-95 disabled:opacity-50"
+              className="w-full bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-200 font-semibold transition transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={
                 !formData.area || !formData.contenido || areas.length === 0
               }
