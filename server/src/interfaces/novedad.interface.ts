@@ -53,3 +53,9 @@ export interface FiltroNovedad {
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;
+
+export enum PrioridadNovedad {
+  NORMAL = "NORMAL",
+  URGENTE = "URGENTE",
+  INFORMATIVA = "INFORMATIVA",
+}
