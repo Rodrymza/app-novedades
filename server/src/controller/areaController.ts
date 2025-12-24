@@ -74,7 +74,6 @@ export const eliminarArea = async (
   try {
     const errores: string[] = [];
     const { id } = req.params;
-    const supervisor = req.user! as JwtPayload;
 
     const area = await Area.findById(id);
 
