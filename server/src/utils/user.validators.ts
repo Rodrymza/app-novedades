@@ -2,7 +2,7 @@ import { AppError } from "../errors/appError";
 import { UserUpdateDTO } from "../interfaces/user.interfaces";
 
 // Función auxiliar para capitalizar (Juan Perez)
-const toTitleCase = (str: string): string => {
+export const toTitleCase = (str: string): string => {
   return str
     .toLowerCase()
     .split(" ")

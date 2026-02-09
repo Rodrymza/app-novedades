@@ -76,7 +76,7 @@ const userShema = new Schema<IUsuario>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userShema.index({ email: 1 });

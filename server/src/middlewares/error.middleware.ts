@@ -6,9 +6,11 @@ export const errorHandler = (
   err: any,
   req: Request,
   res: Response<ErrorResponse>,
-  next: NextFunction
+  next: NextFunction,
 ) => {
-  console.error("ERROR 💥", err.stack);
+  console.error(
+    `ERROR 💥" [${err.name}]: ${err.message} - ${err.stack.split("\n")[1].trim()}`,
+  );
 
   // Chequeo de Estabilidad de Express: Si la respuesta ya fue enviada, detenemos el flujo para evitar crash
   if (res.headersSent) {
