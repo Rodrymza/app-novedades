@@ -9,6 +9,7 @@ const app = express();
 
 app.use(
   cors({
+    origin: "http://localhost:5173", // Tu frontend en el ThinkBook
     credentials: true,
   }),
 );
