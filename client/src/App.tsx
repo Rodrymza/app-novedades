@@ -13,6 +13,8 @@ import AdminAreasPage from "./pages/AdminAreasPage";
 import ProfilePage from "./pages/ProfilePage";
 import { Toaster } from "react-hot-toast";
 import AdminNovedadesPage from "./pages/AdminNovedadesPage";
+import { AdminPlantillasPage } from "./pages/AdminPlantillasPage";
+import { FormularioPlantillaPage } from "./pages/FormularioPlantillaPage";
 
 function App() {
   return (
@@ -51,6 +53,18 @@ function App() {
               <Route
                 path="/admin/gestion-novedades"
                 element={<AdminNovedadesPage />}
+              />
+              <Route
+                path="/admin/plantillas"
+                element={<AdminPlantillasPage />}
+              />
+              <Route
+                path="/admin/plantillas/nueva"
+                element={<FormularioPlantillaPage />}
+              />
+              <Route
+                path="/admin/plantillas/editar/:id"
+                element={<FormularioPlantillaPage />}
               />
             </Route>
           </Route>
