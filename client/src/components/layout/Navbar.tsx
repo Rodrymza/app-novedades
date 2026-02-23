@@ -11,6 +11,7 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
+import { PiNotepadFill } from "react-icons/pi";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -75,6 +76,12 @@ export const Navbar = () => {
                   className="text-blue-200 hover:text-white transition flex items-center gap-1"
                 >
                   <FaBook /> Novedades
+                </Link>
+                <Link
+                  to="/admin/plantillas"
+                  className="text-blue-200 hover:text-white transition flex items-center gap-1"
+                >
+                  <PiNotepadFill /> Plantillas
                 </Link>
               </>
             )}
