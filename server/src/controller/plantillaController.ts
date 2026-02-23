@@ -154,10 +154,12 @@ export const modificarPlantilla = async (
 
     if (nombre) plantillaEcontrada.nombre = toTitleCase(nombre.trim());
     if (tags) plantillaEcontrada.tags = tags;
-    if (contenido) plantillaEcontrada.contenido.trim();
-    if (prioridad) plantillaEcontrada.prioridad;
+    if (contenido) plantillaEcontrada.contenido = contenido.trim();
+    if (prioridad) plantillaEcontrada.prioridad = prioridad;
 
-    return res.status(201).json(PlantillaMapper.toDTO(plantillaEcontrada));
+    const plantillaActualizada = await plantillaEcontrada.save();
+
+    return res.status(200).json(PlantillaMapper.toDTO(plantillaActualizada));
   } catch (error) {
     next(error);
   }
