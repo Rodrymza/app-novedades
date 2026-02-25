@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { AreaService } from "../../services/area.service";
 import type { UserList } from "../../types/user.interfaces";
 import { FaSearch, FaTimes } from "react-icons/fa";
-import type { FiltroNovedad } from "../../types/novedad.interface";
+import {
+  PRIORIDADES_NOVEDAD,
+  type FiltroNovedad,
+  type PrioridadNovedad,
+} from "../../types/novedad.interface";
 import { UserService } from "../../services/user.service";
 
 interface AreaOption {
@@ -26,6 +30,7 @@ const initialFilterState = {
   fechaInicio: "",
   fechaFin: "",
   textoBusqueda: "",
+  prioridad: "",
 };
 
 export const NovedadFilters = ({
@@ -33,7 +38,8 @@ export const NovedadFilters = ({
   onFilterReset,
   loading,
 }: Props) => {
-  const [filters, setFilters] = useState(initialFilterState);
+  const [filters, setFilters] =
+    useState<typeof initialFilterState>(initialFilterState);
   const [areas, setAreas] = useState<AreaOption[]>([]);
   const [authors, setAuthors] = useState<UserList[]>([]);
 
@@ -58,7 +64,7 @@ export const NovedadFilters = ({
 
   // Manejador de cambios de input/select
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
@@ -80,6 +86,7 @@ export const NovedadFilters = ({
       fechaInicio: filters.fechaInicio || undefined,
       fechaFin: filters.fechaFin || undefined,
       textoBusqueda: filters.textoBusqueda || undefined,
+      prioridad: (filters.prioridad as PrioridadNovedad) || undefined,
     };
 
     onFilterSubmit(filtersToSend);
@@ -141,6 +148,23 @@ export const NovedadFilters = ({
               {authors.map((a) => (
                 <option key={a._id} value={a._id}>
                   {a.apellido}, {a.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col w-40">
+            <label className="text-xs text-gray-500">Prioridad</label>
+            <select
+              name="prioridad"
+              value={filters.prioridad}
+              onChange={handleChange}
+              className="border rounded-lg px-2 py-1 bg-white"
+            >
+              <option value="">Todos</option>
+              {PRIORIDADES_NOVEDAD.map((prioridad) => (
+                <option key={prioridad} value={prioridad}>
+                  {`${prioridad.charAt(0)}${prioridad.slice(1, prioridad.length).toLowerCase()}`}
                 </option>
               ))}
             </select>
