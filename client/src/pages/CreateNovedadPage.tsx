@@ -3,7 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useNovedades } from "../hooks/useNovedades";
 import { usePlantillas } from "../hooks/usePlantillas"; // <-- IMPORTAMOS EL HOOK
 import { AreaService } from "../services/area.service";
-import type { CreateNovedad } from "../types/novedad.interface";
+import {
+  PRIORIDADES_NOVEDAD,
+  type CreateNovedad,
+  type PrioridadNovedad,
+} from "../types/novedad.interface";
 import { ConfirmModal } from "../components/layout/ConfirmModal";
 
 interface Area {
@@ -15,19 +19,20 @@ interface FormState {
   contenido: string;
   area: string;
   etiquetasInput: string;
+  prioridad: PrioridadNovedad;
 }
 
 const initialState: FormState = {
   contenido: "",
   area: "",
   etiquetasInput: "",
+  prioridad: "RUTINA",
 };
 
 const CreateNovedadPage = () => {
   const [formData, setFormData] = useState<FormState>(initialState);
   const [areas, setAreas] = useState<Area[]>([]);
   const [localError, setLocalError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(
@@ -108,7 +113,6 @@ const CreateNovedadPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccessMsg(null);
 
     if (!formData.contenido || !formData.area) {
       setLocalError("El contenido de la novedad y el área son obligatorios.");
@@ -125,11 +129,11 @@ const CreateNovedadPage = () => {
         contenido: formData.contenido,
         area_id: formData.area,
         etiquetas: etiquetasArray,
+        prioridad: formData.prioridad,
       };
 
       await crearNovedad(dataToSend);
 
-      setSuccessMsg("¡Novedad registrada con éxito! Volviendo al dashboard...");
       setFormData(initialState);
       setTimeout(() => {
         navigate("/dashboard");
@@ -161,34 +165,52 @@ const CreateNovedadPage = () => {
             {currentError}
           </div>
         )}
-        {successMsg && (
-          <div className="mb-4 p-3 bg-green-100 border-l-4 border-green-500 text-green-700 text-sm">
-            {successMsg}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Área de Gestión *
-            </label>
-            <select
-              name="area"
-              value={formData.area}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none"
-              required
-              disabled={areas.length === 0}
-            >
-              {areas.length === 0 && (
-                <option value="">Cargando áreas...</option>
-              )}
-              {areas.map((area) => (
-                <option key={area.id} value={area.id}>
-                  {area.nombre}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Área */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Área de Gestión *
+              </label>
+              <select
+                name="area"
+                value={formData.area}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none"
+                required
+                disabled={areas.length === 0}
+              >
+                {areas.length === 0 && (
+                  <option value="">Cargando áreas...</option>
+                )}
+                {areas.map((area) => (
+                  <option key={area.id} value={area.id}>
+                    {area.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Prioridad */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Prioridad *
+              </label>
+              <select
+                name="prioridad"
+                value={formData.prioridad}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none"
+                required
+              >
+                {PRIORIDADES_NOVEDAD.map((prioridad) => (
+                  <option key={prioridad} value={prioridad}>
+                    {prioridad.charAt(0) + prioridad.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
