@@ -26,7 +26,7 @@ const plantillaSchema = new Schema({
   prioridad: {
     type: String,
     enum: Object.values(PrioridadNovedad),
-    default: PrioridadNovedad.NORMAL,
+    default: PrioridadNovedad.RUTINA,
   },
   is_deleted: {
     type: Boolean,
