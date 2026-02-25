@@ -18,6 +18,7 @@ export class NovedadMapper {
       etiquetas: doc.etiquetas,
       fecha: doc.createdAt.toISOString() || new Date().toISOString(),
       is_deleted: doc.is_deleted,
+      prioridad: doc.prioridad,
     };
     if (doc.is_deleted) {
       const usuarioDelete = doc.audit_delete?.usuario_id;

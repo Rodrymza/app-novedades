@@ -6,6 +6,7 @@ export interface CreateNovedad {
   usuario_id: Types.ObjectId;
   area_id: Types.ObjectId;
   etiquetas: string[];
+  prioridad: PrioridadNovedad;
 }
 
 export interface EliminarNovedad {
@@ -30,6 +31,7 @@ export interface NovedadResponse {
   etiquetas?: string[];
   fecha: string;
   is_deleted: boolean;
+  prioridad: PrioridadNovedad;
   audit_delete?: {
     fecha: string;
     usuario: {
@@ -50,12 +52,13 @@ export interface FiltroNovedad {
   fechaFin: string;
   textoBusqueda: string;
   is_deleted: boolean;
+  prioridad: string;
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;
 
 export enum PrioridadNovedad {
-  NORMAL = "NORMAL",
+  RUTINA = "RUTINA",
   URGENTE = "URGENTE",
   INFORMATIVA = "INFORMATIVA",
 }
