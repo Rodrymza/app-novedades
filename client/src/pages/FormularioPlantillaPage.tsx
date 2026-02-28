@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { usePlantillas } from "../hooks/usePlantillas";
 import type { CreatePlantilla } from "../types/plantilla.interface";
 
 export const FormularioPlantillaPage = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
-  const navigate = useNavigate();
 
   const { plantillas, traerPlantillas, crearPlantilla, modificarPlantilla } =
     usePlantillas();
