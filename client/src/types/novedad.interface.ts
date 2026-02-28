@@ -48,10 +48,17 @@ export interface FiltroNovedad {
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;
 
-export type PrioridadNovedad = "RUTINA" | "URGENTE" | "INFORMATIVA";
+export type PrioridadNovedad =
+  | "RUTINA"
+  | "URGENTE"
+  | "INFORMATIVA"
+  | "PENDIENTE"
+  | "MANTENIMIENTO";
 
 export const PRIORIDADES_NOVEDAD: PrioridadNovedad[] = [
   "RUTINA",
+  "PENDIENTE",
+  "MANTENIMIENTO",
   "URGENTE",
   "INFORMATIVA",
 ];
