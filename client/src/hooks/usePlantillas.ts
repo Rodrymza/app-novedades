@@ -4,6 +4,8 @@ import type {
   PlantillaResponse,
 } from "../types/plantilla.interface";
 import { PlantillaService } from "../services/plantilla.service";
+import toast from "react-hot-toast";
+import { getErrorMessage } from "../utils/getErrorMessage";
 
 export const usePlantillas = () => {
   // 1. Estados dentro del hook para independencia total
@@ -11,20 +13,34 @@ export const usePlantillas = () => {
     null,
   );
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleAsync = useCallback(
-    async (action: () => Promise<any>, errorMsg?: string) => {
+    async (
+      action: () => Promise<any>, // Agregamos mensaje de éxito opcional
+      errorMsg?: string,
+      successMsg?: string,
+    ) => {
       setLoading(true);
-      setError(null);
+
       try {
         const result = await action();
+
+        // Si la acción fue exitosa y pasamos un mensaje, disparamos el toast
+        if (successMsg) {
+          toast.success(successMsg);
+        }
+
         return result;
       } catch (err: any) {
-        const msg = err.message || "Error desconocido";
-        setError(`${errorMsg || "Error"}: ${msg}`);
-        // aqui podriamos propagar el error si lo necesitamos
-        // throw err;
+        const msg = getErrorMessage(err);
+        const finalError = `${errorMsg || "Error"}: ${msg}`;
+
+        // Disparamos el toast de error
+        toast.error(finalError);
+
+        // Es buena práctica propagar el error si el componente
+        // que llama necesita hacer algo específico tras el fallo
+        throw err;
       } finally {
         setLoading(false);
       }
@@ -48,6 +64,7 @@ export const usePlantillas = () => {
       await handleAsync(
         () => PlantillaService.crearPlantilla(nueva),
         "Error al crear",
+        "Plantilla creada satisfactoriamente",
       );
       await traerPlantillas();
     },
@@ -71,6 +88,7 @@ export const usePlantillas = () => {
       await handleAsync(
         () => PlantillaService.borrarPlantilla(id),
         "Error al eliminar",
+        "Plantilla eliminada satisfactoriamente",
       );
       await traerPlantillas();
     },
@@ -82,6 +100,7 @@ export const usePlantillas = () => {
       await handleAsync(
         () => PlantillaService.restaurarPlantilla(id),
         "Error al restaurar",
+        "Plantilla restaurada satisfactoriamente",
       );
       await traerPlantillas();
     },
@@ -91,7 +110,6 @@ export const usePlantillas = () => {
   return {
     plantillas,
     loadingPlantillas: loading,
-    errorPlantillas: error,
     traerPlantillas,
     crearPlantilla,
     modificarPlantilla,
