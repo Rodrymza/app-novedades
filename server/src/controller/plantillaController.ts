@@ -77,10 +77,6 @@ export const findAllPlantillas = async (
     }
     const plantillas = await Plantilla.find(filtro).sort({ createdAt: -1 });
 
-    if (plantillas.length == 0) {
-      return res.status(200).json("No existen plantillas cargadas");
-    }
-
     const plantillasDTO = plantillas.map((plantilla) =>
       PlantillaMapper.toDTO(plantilla),
     );
