@@ -59,6 +59,8 @@ export type NovedadResponseData = NovedadResponse | ErrorResponse;
 
 export enum PrioridadNovedad {
   RUTINA = "RUTINA",
+  PENDIENTE = "PENDIENTE",
+  MANTENIMIENTO = "MANTENIMIENTO",
   URGENTE = "URGENTE",
   INFORMATIVA = "INFORMATIVA",
 }
