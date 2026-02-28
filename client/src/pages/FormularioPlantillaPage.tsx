@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { usePlantillas } from "../hooks/usePlantillas";
 import type { CreatePlantilla } from "../types/plantilla.interface";
+import { PRIORIDADES_NOVEDAD } from "../types/novedad.interface";
+import { FaCheckCircle } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 export const FormularioPlantillaPage = () => {
   const { id } = useParams();
   const isEditMode = Boolean(id);
+  const navigate = useNavigate();
 
   const { plantillas, traerPlantillas, crearPlantilla, modificarPlantilla } =
     usePlantillas();
@@ -13,11 +17,11 @@ export const FormularioPlantillaPage = () => {
   const [formData, setFormData] = useState({
     nombre: "",
     contenido: "",
+    prioridad: "",
     tagsInput: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!plantillas) {
@@ -31,28 +35,30 @@ export const FormularioPlantillaPage = () => {
         setFormData({
           nombre: plantillaAEditar.nombre,
           contenido: plantillaAEditar.contenido || "",
+          prioridad: plantillaAEditar.prioridad || "RUTINA",
           tagsInput: plantillaAEditar.tags
             ? plantillaAEditar.tags.join(", ")
             : "",
         });
       } else {
-        setLocalError("No se encontró la plantilla solicitada.");
+        toast.error("No se encontró la plantilla solicitada.");
       }
     }
   }, [id, isEditMode, plantillas, traerPlantillas]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    setLocalError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nombre.trim() || !formData.contenido.trim()) {
-      setLocalError("El nombre y el contenido son obligatorios.");
+      toast.error("El nombre y el contenido son obligatorios.");
       return;
     }
 
@@ -66,19 +72,22 @@ export const FormularioPlantillaPage = () => {
       const payload: Partial<CreatePlantilla> = {
         nombre: formData.nombre,
         contenido: formData.contenido,
+        prioridad: formData.prioridad,
         tags: tagsArray,
       };
+      let mensaje = "";
       if (isEditMode && id) {
         await modificarPlantilla(id, payload);
+        mensaje = "modificada";
       } else {
         await crearPlantilla(payload as CreatePlantilla);
+        mensaje = "creada";
       }
 
-      //navigate("/admin/plantillas");
+      toast.success(`Plantilla ${mensaje} exitosamente`);
+      navigate("/admin/plantillas");
     } catch (error: any) {
-      setLocalError(
-        error.message || "Ocurrió un error al guardar la plantilla.",
-      );
+      toast.error(error.message || "Ocurrió un error al guardar la plantilla.");
     } finally {
       setIsSubmitting(false);
     }
@@ -104,12 +113,6 @@ export const FormularioPlantillaPage = () => {
         </Link>
       </div>
 
-      {localError && (
-        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
-          {localError}
-        </div>
-      )}
-
       {/* FORMULARIO ÚNICO */}
       <div className="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-200">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -126,6 +129,55 @@ export const FormularioPlantillaPage = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               required
             />
+          </div>
+
+          <div className="p-5 rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-3">
+              <FaCheckCircle className="text-blue-500" />
+              Prioridad Predeterminada *
+            </label>
+
+            <div className="relative group">
+              <select
+                name="prioridad"
+                value={formData.prioridad}
+                onChange={handleChange}
+                className="w-full appearance-none px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-800 font-semibold focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all cursor-pointer"
+                required
+              >
+                {PRIORIDADES_NOVEDAD.map((prioridad) => (
+                  <option
+                    key={prioridad}
+                    value={prioridad}
+                    className="bg-white text-slate-800 font-medium"
+                  >
+                    {prioridad}
+                  </option>
+                ))}
+              </select>
+
+              {/* Icono de flecha personalizado para el select */}
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-slate-400 group-hover:text-blue-500 transition-colors">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500 italic">
+              Esta prioridad se seleccionará automáticamente al usar esta
+              plantilla.
+            </p>
           </div>
 
           <div>
