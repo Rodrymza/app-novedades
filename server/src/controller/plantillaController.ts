@@ -72,18 +72,10 @@ export const findAllPlantillas = async (
 
     const filtro: any = { is_deleted: false };
 
-    if (esSupervisor) {
-      if (estado === "eliminadas") {
-        filtro.is_deleted = true;
-      } else if (estado === "todas") {
-        delete filtro.is_deleted;
-      }
+    if (esSupervisor && estado == "todas") {
+      delete filtro.is_deleted;
     }
     const plantillas = await Plantilla.find(filtro).sort({ createdAt: -1 });
-
-    if (plantillas.length == 0) {
-      return res.status(200).json("No existen plantillas cargadas");
-    }
 
     const plantillasDTO = plantillas.map((plantilla) =>
       PlantillaMapper.toDTO(plantilla),
@@ -154,10 +146,12 @@ export const modificarPlantilla = async (
 
     if (nombre) plantillaEcontrada.nombre = toTitleCase(nombre.trim());
     if (tags) plantillaEcontrada.tags = tags;
-    if (contenido) plantillaEcontrada.contenido.trim();
-    if (prioridad) plantillaEcontrada.prioridad;
+    if (contenido) plantillaEcontrada.contenido = contenido.trim();
+    if (prioridad) plantillaEcontrada.prioridad = prioridad;
 
-    return res.status(201).json(PlantillaMapper.toDTO(plantillaEcontrada));
+    const plantillaActualizada = await plantillaEcontrada.save();
+
+    return res.status(200).json(PlantillaMapper.toDTO(plantillaActualizada));
   } catch (error) {
     next(error);
   }

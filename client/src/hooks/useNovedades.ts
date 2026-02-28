@@ -29,25 +29,40 @@ export const useNovedades = () => {
     }
   }, []);
 
-  const crearNovedad = useCallback(async (nuevaNovedad: CreateNovedad) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const createdNovedad = await NovedadService.crearNovedad(nuevaNovedad);
-      if (createdNovedad) {
+  const crearNovedad = useCallback(
+    async (nuevaNovedad: CreateNovedad) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        await toast.promise(NovedadService.crearNovedad(nuevaNovedad), {
+          loading: "Creando novedad...",
+          success: "Novedad creada satisfactoriamente!",
+          error: (error: any) => {
+            if (error.response?.data) {
+              return (
+                error.response.data.detail ||
+                error.response.data.message ||
+                "Error al crear la novedad."
+              );
+            }
+            return "No se pudo conectar con el servidor.";
+          },
+        });
+
         await traerNovedades();
+      } catch (error: any) {
+        if (error.response?.data) {
+          setError(error.response.data.detail || error.response.data.message);
+        } else {
+          setError("No se pudo conectar con el servidor.");
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      if (error.response?.data) {
-        const { message, detail } = error.response.data;
-        setError(detail || message || "Error al crear la novedad.");
-      } else {
-        setError("No se pudo conectar con el servidor.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [traerNovedades],
+  );
 
   const filtrarNovedades = useCallback(async (filtro: FiltroNovedad) => {
     setLoading(true);
@@ -69,20 +84,24 @@ export const useNovedades = () => {
 
   const eliminarNovedad = useCallback(async (id: string, motivo: string) => {
     try {
-      await toast.promise(NovedadService.borrarNovedad(id, motivo), {
-        loading: "Eliminando novedad...",
-        success: "Novedad eliminada correctamente",
-        error: (err) => {
-          if (err instanceof AxiosError && err.response?.data) {
-            return (
-              err.response.data.detail ||
-              err.response.data.message ||
-              "Error al eliminar"
-            );
-          }
-          return "Ocurrió un error inesperado";
+      const created = await toast.promise(
+        NovedadService.borrarNovedad(id, motivo),
+        {
+          loading: "Eliminando novedad...",
+          success: "Novedad eliminada correctamente",
+          error: (err) => {
+            if (err instanceof AxiosError && err.response?.data) {
+              return (
+                err.response.data.detail ||
+                err.response.data.message ||
+                "Error al eliminar"
+              );
+            }
+            return "Ocurrió un error inesperado";
+          },
         },
-      });
+      );
+      if (created) await traerNovedades();
     } catch (error) {
       setError("No se pudo eliminar el usuario");
     } finally {

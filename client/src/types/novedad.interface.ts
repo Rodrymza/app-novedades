@@ -4,6 +4,7 @@ export interface CreateNovedad {
   contenido: string;
   area_id: string;
   etiquetas: string[];
+  prioridad: PrioridadNovedad;
 }
 
 export interface NovedadResponse {
@@ -21,6 +22,7 @@ export interface NovedadResponse {
   };
   etiquetas?: string[];
   is_deleted: boolean;
+  prioridad: PrioridadNovedad;
   audit_delete?: {
     fecha: string;
     usuario: {
@@ -41,6 +43,22 @@ export interface FiltroNovedad {
   fechaFin?: string | undefined;
   textoBusqueda?: string | undefined;
   is_deleted?: boolean | undefined;
+  prioridad?: PrioridadNovedad | "";
 }
 
 export type NovedadResponseData = NovedadResponse | ErrorResponse;
+
+export type PrioridadNovedad =
+  | "RUTINA"
+  | "URGENTE"
+  | "INFORMATIVA"
+  | "PENDIENTE"
+  | "MANTENIMIENTO";
+
+export const PRIORIDADES_NOVEDAD: PrioridadNovedad[] = [
+  "RUTINA",
+  "PENDIENTE",
+  "MANTENIMIENTO",
+  "URGENTE",
+  "INFORMATIVA",
+];

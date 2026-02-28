@@ -9,6 +9,7 @@ import {
   FiltroNovedad,
   NovedadResponse,
   NovedadResponseData,
+  PrioridadNovedad,
 } from "../interfaces/novedad.interface";
 import { Rol } from "../interfaces/user.interfaces";
 import { AppError } from "../errors/appError";
@@ -29,7 +30,7 @@ export const crearNovedad: RequestHandler<
       });
     }
 
-    const { contenido, area_id, etiquetas } = req.body;
+    const { contenido, area_id, etiquetas, prioridad } = req.body;
     const user_id = req.user.id;
 
     if (!contenido || contenido.trim() === "") {
@@ -53,6 +54,12 @@ export const crearNovedad: RequestHandler<
       });
     }
 
+    const prioridadFinal: PrioridadNovedad = Object.values(
+      PrioridadNovedad,
+    ).includes(prioridad?.toUpperCase() as PrioridadNovedad)
+      ? (prioridad.toUpperCase() as PrioridadNovedad)
+      : PrioridadNovedad.RUTINA;
+
     const contenidoEtiquetas: string[] = etiquetas || [];
 
     const [usuario, area] = await Promise.all([
@@ -64,7 +71,7 @@ export const crearNovedad: RequestHandler<
       throw new AppError(
         "Usuario no autenticado",
         401,
-        "Debes estar autenticado para ver las novedades"
+        "Debes estar autenticado para ver las novedades",
       );
     }
 
@@ -72,7 +79,7 @@ export const crearNovedad: RequestHandler<
       throw new AppError(
         "Area no encontrada",
         404,
-        "No se encontro el area con el id especificado"
+        "No se encontro el area con el id especificado",
       );
     }
 
@@ -80,7 +87,7 @@ export const crearNovedad: RequestHandler<
       throw new AppError(
         `Área ${area.nombre} elimininada`,
         400,
-        "No se pueden generar novedades sobre áreas eliminadas"
+        "No se pueden generar novedades sobre áreas eliminadas",
       );
     }
 
@@ -89,6 +96,7 @@ export const crearNovedad: RequestHandler<
       usuario: user_id,
       area: area_id,
       etiquetas: contenidoEtiquetas,
+      prioridad: prioridadFinal,
     });
 
     const novedadPoblada = await nuevaNovedad.populate([
@@ -137,6 +145,7 @@ export const filtrarNovedades: RequestHandler<
       fechaFin,
       textoBusqueda,
       is_deleted,
+      prioridad,
     } = req.body;
 
     const filtro: FilterQuery<any> = {};
@@ -165,7 +174,7 @@ export const filtrarNovedades: RequestHandler<
         filtro.createdAt.$gte = new Date(
           parseInt(y),
           parseInt(m) - 1,
-          parseInt(d)
+          parseInt(d),
         );
       }
 
@@ -187,6 +196,15 @@ export const filtrarNovedades: RequestHandler<
       filtro.etiquetas = { $in: tags };
     } // 3. Ejecutamos la consulta
 
+    if (
+      prioridad &&
+      Object.values(PrioridadNovedad).includes(
+        prioridad?.toUpperCase() as PrioridadNovedad,
+      )
+    ) {
+      filtro.prioridad = prioridad.toUpperCase() as PrioridadNovedad;
+    }
+
     const novedades = await Novedad.find(filtro)
       .populate("usuario", "nombre apellido username")
       .populate("area", "nombre")
@@ -206,7 +224,7 @@ export const filtrarNovedades: RequestHandler<
 export const eliminarNovedad = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const MENSAJE_ERROR = "Error de validación al eliminar la novedad";
   try {
@@ -232,7 +250,7 @@ export const eliminarNovedad = async (
       throw new AppError(
         "Novedad no existe",
         404,
-        "No se encontro novedad con el id especificado"
+        "No se encontro novedad con el id especificado",
       );
     }
 
@@ -240,7 +258,7 @@ export const eliminarNovedad = async (
       throw new AppError(
         "Error de eliminacion",
         400,
-        "La novedad ya se encuentra eliminada"
+        "La novedad ya se encuentra eliminada",
       );
     }
 
@@ -269,7 +287,7 @@ export const eliminarNovedad = async (
 export const restaurarNovedad = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
@@ -280,7 +298,7 @@ export const restaurarNovedad = async (
       throw new AppError(
         "Novedad no encontrada",
         404,
-        "No se encontro con la novedad especificada"
+        "No se encontro con la novedad especificada",
       );
     }
 
@@ -288,7 +306,7 @@ export const restaurarNovedad = async (
       throw new AppError(
         "Novedad activa",
         400,
-        "No puede restaurarse una novedad activa"
+        "No puede restaurarse una novedad activa",
       );
     }
 

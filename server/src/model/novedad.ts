@@ -1,4 +1,5 @@
 import { HydratedDocument, Schema, Types, model } from "mongoose";
+import { PrioridadNovedad } from "../interfaces/novedad.interface";
 
 export interface INovedad {
   contenido: string;
@@ -6,6 +7,7 @@ export interface INovedad {
   area: Types.ObjectId;
   etiquetas: string[];
   is_deleted: boolean;
+  prioridad: PrioridadNovedad;
   audit_delete?: {
     fecha: Date;
     usuario_id: Types.ObjectId;
@@ -34,6 +36,10 @@ const novedadSchema = new Schema(
       type: [String],
       default: [],
     },
+    prioridad: {
+      type: String,
+      default: "RUTINA",
+    },
     is_deleted: {
       type: Boolean,
       default: false,
@@ -46,7 +52,7 @@ const novedadSchema = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 novedadSchema.index({ contenido: "text" });
 
