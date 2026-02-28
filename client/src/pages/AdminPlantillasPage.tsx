@@ -8,7 +8,6 @@ export const AdminPlantillasPage = () => {
   const {
     plantillas,
     loadingPlantillas,
-    errorPlantillas,
     traerPlantillas,
     eliminarPlantilla,
     restaurarPlantilla,
@@ -110,12 +109,6 @@ export const AdminPlantillasPage = () => {
           + Nueva Plantilla
         </button>
       </div>
-
-      {errorPlantillas && (
-        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
-          {errorPlantillas}
-        </div>
-      )}
 
       {/* --- SECCIÓN DE FILTROS --- */}
       <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-8 flex flex-col md:flex-row gap-4">
