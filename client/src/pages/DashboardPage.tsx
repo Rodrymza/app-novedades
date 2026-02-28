@@ -74,11 +74,12 @@ const DashboardPage = () => {
             3. Si showFilters es true, forzamos 'block' en móvil.
         */}
         <div
-          className={`transition-all duration-300 ease-in-out ${
+          className={`w-full sm:w-auto mb-4 transition-all duration-300 ${
             showFilters ? "block" : "hidden"
           } md:block`}
         >
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm">
+          {/* Opcional: Agregar un fondo gris en móvil para destacar que es un área de herramientas */}
+          <div className="md:bg-transparent bg-white md:p-0 p-4 rounded-xl md:shadow-none shadow-sm border md:border-none border-gray-100">
             <NovedadFilters
               onFilterSubmit={handleFilterSubmit}
               onFilterReset={handleFilterReset}
