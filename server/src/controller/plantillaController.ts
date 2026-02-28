@@ -72,12 +72,8 @@ export const findAllPlantillas = async (
 
     const filtro: any = { is_deleted: false };
 
-    if (esSupervisor) {
-      if (estado === "eliminadas") {
-        filtro.is_deleted = true;
-      } else if (estado === "todas") {
-        delete filtro.is_deleted;
-      }
+    if (esSupervisor && estado == "todas") {
+      delete filtro.is_deleted;
     }
     const plantillas = await Plantilla.find(filtro).sort({ createdAt: -1 });
 
