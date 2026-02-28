@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { PiNotepadFill } from "react-icons/pi";
+import { getIniciales } from "../../utils/utils";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -27,7 +28,7 @@ export const Navbar = () => {
 
   return (
     <header className="bg-blue-600 shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 py-2 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* --- SECCIÓN IZQUIERDA: LOGO + ENLACES DESKTOP --- */}
           <div className="flex items-center gap-6">
@@ -87,9 +88,29 @@ export const Navbar = () => {
             )}
 
             {/* Info Usuario */}
-            <div className="text-sm text-blue-100 border-l border-blue-400 pl-4 py-1 text-right">
-              <p className="font-semibold">{user.username}</p>
-              <p className="text-xs italic opacity-80">{user.rol}</p>
+            <div className="flex items-center gap-3 text-blue-100 border-l border-blue-400/50 pl-4 py-1">
+              {/* 1. Contenedor de Texto (Alineado a la derecha) */}
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold leading-none mb-1">
+                  {user.apellido}, {user.nombre}
+                </p>
+                <div className="flex flex-col items-end">
+                  <p className="text-[11px] font-medium opacity-90 tracking-wider">
+                    @{user.username}
+                  </p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/30 border border-blue-300/30 italic font-bold mt-1">
+                    {user.rol}
+                  </span>
+                </div>
+              </div>
+
+              {/* 2. Avatar (Círculo de Iniciales) */}
+              <div
+                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 shadow-inner bg-white text-blue-700 border-blue-200 transition-transform hover:scale-105 cursor-pointer"
+                title={`${user.nombre} ${user.apellido}`}
+              >
+                {getIniciales(user.nombre, user.apellido)}
+              </div>
             </div>
 
             <button
