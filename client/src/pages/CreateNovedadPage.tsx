@@ -9,7 +9,40 @@ import {
   type PrioridadNovedad,
 } from "../types/novedad.interface";
 import { ConfirmModal } from "../components/layout/ConfirmModal";
+import {
+  FaExclamationTriangle,
+  FaCheckCircle,
+  FaClock,
+  FaTools,
+  FaInfoCircle,
+  FaBuilding, // Ícono para el Área
+} from "react-icons/fa";
 
+// Configuramos los colores e íconos para el selector
+const PRIORIDAD_UI = {
+  URGENTE: {
+    clases: "bg-red-50 border-red-300 text-red-800 focus:ring-red-500",
+    icon: <FaExclamationTriangle className="text-red-600" />,
+  },
+  PENDIENTE: {
+    clases:
+      "bg-yellow-50 border-yellow-300 text-yellow-800 focus:ring-yellow-500",
+    icon: <FaClock className="text-yellow-600" />,
+  },
+  MANTENIMIENTO: {
+    clases:
+      "bg-orange-50 border-orange-300 text-orange-800 focus:ring-orange-500",
+    icon: <FaTools className="text-orange-600" />,
+  },
+  RUTINA: {
+    clases: "bg-green-50 border-green-300 text-green-800 focus:ring-green-500",
+    icon: <FaCheckCircle className="text-green-600" />,
+  },
+  INFORMATIVA: {
+    clases: "bg-blue-50 border-blue-300 text-blue-800 focus:ring-blue-500",
+    icon: <FaInfoCircle className="text-blue-600" />,
+  },
+};
 interface Area {
   id: string;
   nombre: string;
@@ -167,17 +200,17 @@ const CreateNovedadPage = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Área */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Área de Gestión *
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Campo Área */}
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-sm transition-all hover:shadow-md">
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                <FaBuilding className="text-gray-500" /> Área de Gestión *
               </label>
               <select
                 name="area"
                 value={formData.area}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none font-medium text-gray-700 transition-colors cursor-pointer"
                 required
                 disabled={areas.length === 0}
               >
@@ -192,21 +225,34 @@ const CreateNovedadPage = () => {
               </select>
             </div>
 
-            {/* Prioridad */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Prioridad *
+            <div
+              className={`p-4 rounded-xl border shadow-sm transition-all duration-300 hover:shadow-md ${
+                formData.prioridad
+                  ? PRIORIDAD_UI[formData.prioridad].clases.split(" ")[0]
+                  : "bg-gray-50"
+              }`}
+            >
+              <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+                {PRIORIDAD_UI[formData.prioridad]?.icon || <FaCheckCircle />}
+                Nivel de Prioridad *
               </label>
               <select
                 name="prioridad"
                 value={formData.prioridad}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white outline-none"
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 outline-none font-bold transition-colors cursor-pointer ${
+                  PRIORIDAD_UI[formData.prioridad]?.clases ||
+                  "bg-white border-gray-300 focus:ring-blue-500"
+                }`}
                 required
               >
                 {PRIORIDADES_NOVEDAD.map((prioridad) => (
-                  <option key={prioridad} value={prioridad}>
-                    {prioridad.charAt(0) + prioridad.slice(1).toLowerCase()}
+                  <option
+                    key={prioridad}
+                    value={prioridad}
+                    className="bg-white text-gray-800 font-medium" // Forzamos fondo blanco en las opciones
+                  >
+                    {prioridad}
                   </option>
                 ))}
               </select>
@@ -249,7 +295,7 @@ const CreateNovedadPage = () => {
               name="contenido"
               value={formData.contenido}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-y min-h-[400px] font-mono text-sm"
+              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none resize-y min-h-[400px] font-mono text-sm ${PRIORIDAD_UI[formData.prioridad]?.clases}`}
               placeholder="Describa la novedad, el incidente o la tarea realizada..."
               required
             />
