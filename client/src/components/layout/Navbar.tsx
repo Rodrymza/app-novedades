@@ -9,9 +9,9 @@ import {
   FaBook,
   FaBars,
   FaTimes,
+  FaPen,
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
-import { PiNotepadFill } from "react-icons/pi";
 import { getIniciales } from "../../utils/utils";
 
 export const Navbar = () => {
@@ -82,7 +82,7 @@ export const Navbar = () => {
                   to="/admin/plantillas"
                   className="text-blue-200 hover:text-white transition flex items-center gap-1"
                 >
-                  <PiNotepadFill /> Plantillas
+                  <FaPen /> Plantillas
                 </Link>
               </>
             )}
@@ -172,12 +172,25 @@ export const Navbar = () => {
               >
                 Novedades
               </MobileLink>
+              <MobileLink
+                to="/admin/plantillas"
+                icon={<FaPen />}
+                onClick={closeMenu}
+              >
+                Plantillas
+              </MobileLink>
             </div>
           )}
 
           {/* Bloque 3: Usuario y Logout */}
           <div className="border-t border-blue-500 mt-2 pt-3 pb-1">
             <div className="flex items-center px-3 mb-3">
+              <div
+                className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-black text-sm border-2 shadow-inner bg-white text-blue-700 border-blue-200 transition-transform hover:scale-105 cursor-pointer"
+                title={`${user.nombre} ${user.apellido}`}
+              >
+                {getIniciales(user.nombre, user.apellido)}
+              </div>
               <div className="ml-2">
                 <div className="text-base font-medium text-white leading-none mb-1">
                   {user.username}
