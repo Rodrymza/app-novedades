@@ -190,7 +190,7 @@ export const AdminPlantillasPage = () => {
                   onClick={() =>
                     navigate(`/admin/plantillas/editar/${plantilla.id}`)
                   }
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm font-medium transition"
+                  className={`flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm font-medium transition ${plantilla.is_deleted ? "cursor-not-allowed" : "cursor-pointer"}`}
                   disabled={plantilla.is_deleted} // Opcional: Evitar editar si está eliminada
                 >
                   Modificar
