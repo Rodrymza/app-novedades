@@ -58,7 +58,7 @@ const AdminNovedadesPage = () => {
   const filteredList = novedades.filter(
     (n) =>
       n.contenido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      n.usuario.apellido.toLowerCase().includes(searchTerm.toLowerCase())
+      n.usuario.apellido.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // --- HANDLERS ACCIONES ---
@@ -102,8 +102,8 @@ const AdminNovedadesPage = () => {
 
   return (
     <>
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto">
+      <div className="space-y-6">
+        <div className="mx-auto">
           {/* --- HEADER SUPERIOR --- */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -200,6 +200,7 @@ const AdminNovedadesPage = () => {
                     novedad={nov}
                     onRestore={nov.is_deleted ? handleRestoreClick : undefined}
                     onDelete={nov.is_deleted ? undefined : handleDeleteClick}
+                    isVertical={false}
                   />
                 ))}
 
